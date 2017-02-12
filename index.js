@@ -156,7 +156,7 @@ function handleNewMotivationRequest(intent, session, callback) {
     // Create speech output
     var speechOutput = "Here's a quote: " + randomFact;
     var reprompt = "Got that?"
-    var shouldEndSession = false
+    var shouldEndSession = true
     var sessionAttributes = {}
     //App 
     var cardTitle = "Your Motivation";
