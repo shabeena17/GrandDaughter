@@ -76,6 +76,7 @@ function onSessionStarted(sessionStartedRequest, session) {
 function onLaunch(launchRequest, session, callback) {
     console.log("onLaunch requestId=" + launchRequest.requestId
         + ", sessionId=" + session.sessionId);
+    getWelcomeResponse(callback);
 }
 
 /**
@@ -186,7 +187,7 @@ function handleNewMotivationRequest(intent, session, callback) {
 
 function getWelcomeResponse(callback) {
     var sessionAttributes = {},
-        speechOutput = "",
+        speechOutput = "Welcome to Grand Daughter. How can I help?",
         shouldEndSession = false,
         repromptText = "";
     speechOutput += repromptText;
