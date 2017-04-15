@@ -1,0 +1,72 @@
+{
+  "intents": [
+    {
+      "intent": "NewAppointmentIntent",
+      "slots": [
+        {
+          "name": "Appointment",
+          "type": "LIST_OF_APPOINTMENTS"
+        },
+        {
+          "name": "Day",
+          "type": "AMAZON.DATE"
+        }
+      ]
+    },
+    {
+      "intent": "CorrectionIntent",
+      "slots": [
+        {
+          "name": "Correction",
+          "type": "LIST_OF_CORRECTION"
+        }
+      ]
+    },
+    {
+      "intent": "GetAppointmentOnDayIntent",
+      "slots": [
+        {
+          "name": "Appointment",
+          "type": "LIST_OF_APPOINTMENTS"
+        },
+        {
+          "name": "Day",
+          "type": "AMAZON.DATE"
+        }
+      ]
+    },
+    {
+      "intent": "GetAllAppointmentIntent",
+      "slots": [
+        {
+          "name": "App",
+          "type": "LIST_OF_KEYWORDS"
+        }
+      ]
+    },
+    {
+      "intent": "GetAllAppointmentOnDayIntent",
+      "slots": [
+        {
+          "name": "Day",
+          "type": "AMAZON.DATE"
+        }
+      ]
+    },
+    {
+      "intent": "MyHelpIntent"
+    },
+    {
+      "intent": "MyCancelIntent"
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "AMAZON.StopIntent"
+    },
+    {
+      "intent": "AMAZON.CancelIntent"
+    }
+  ]
+}
