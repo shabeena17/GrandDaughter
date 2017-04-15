@@ -159,7 +159,7 @@ var storage = (function () {
         },
         
         /**
-         * Find all exercises in the Db
+         * Find all appointment in the Db
          */
         getAllAppointments: function(response){
             var query = "select * from Appointments";

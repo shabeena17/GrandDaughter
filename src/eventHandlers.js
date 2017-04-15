@@ -15,7 +15,7 @@ var registerEventHandlers = function (eventHandlers, skillContext) {
     eventHandlers.onLaunch = function (launchRequest, session, response) {
         //Speak welcome message and ask user questions
         
-        var speechOutput = 'Welcome to Fitness Logger, What can I do for you?',
+        var speechOutput = 'Welcome to Appointment Skill, What can I do for you?',
             reprompt = textHelper.helpText + ' What can I do for you?';
         response.ask(speechOutput, reprompt);
     };

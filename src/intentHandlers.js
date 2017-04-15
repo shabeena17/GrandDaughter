@@ -13,7 +13,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     /**
      * Creates new appointment
      */
-    intentHandlers.NewExcerciseIntent = function (intent, session, response) {   
+    intentHandlers.NewAppointmentIntent = function (intent, session, response) {   
         if(intent.slots.Appointment.value !== undefined) {        
             var appointment = intent.slots.Appointment.value;
     
@@ -67,17 +67,17 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     response.ask(speechOutput, reprompt);
                 }
             
-            storage.findAllAppointmentsOnDate(session, response, exercise, day);
+            storage.findAllAppointmentsOnDate(session, response, appointment, day);
         } else {
-            var speechOutput = "You have to specify exercise and date. Please try again."+
-                    " You can say, Get my Push Ups on last Friday.";
+            var speechOutput = "You have to specify appointment and date. Please try again."+
+                    " You can say, Get my doctor appointment on last Friday.";
             var reprompt = "Please say your command."
             response.ask(speechOutput, reprompt);
         }
     };
     
     /**
-     * Gets all exercises on a given date
+     * Gets all appointments on a given date
      */
     intentHandlers.GetAllExerciseOnDayIntent = function (intent, session, response) {        
         if(intent.slots.Day.value !== undefined) {
@@ -85,25 +85,25 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             
             if(day == "") {
                 var speechOutput = "Sorry, I could not understand the date. Please try again."+
-                    " You can say, Get my exercises on last Friday.";
+                    " You can say, Get my appointment on last Friday.";
                 var reprompt = "Please say your command."
                 response.ask(speechOutput, reprompt);
             }
             
-            storage.findAllExercisesOnDate(session, response, day);
+            storage.findAllAppointmentOnDate(session, appointment, response, day);
         } else {
             var speechOutput = "You have to specify the date. Please try again. "+
-                "You can say, Get my exercises on last Friday.";
+                "You can say, Get my appointment on last Friday.";
             var reprompt = "Please say your command."
             response.ask(speechOutput, reprompt);
         }
     };
     
     /**
-     * Get a list for all supported exercises
+     * Get a list for all supported appointment
      */
-    intentHandlers.GetAllExercisesIntent = function (intent, session, response) {
-        storage.getAllExercises(response);
+    intentHandlers.GetAllAppointmentIntent = function (intent, session, response) {
+        storage.getAllAppointments(response);
     };
     
     intentHandlers.MyHelpIntent = function (intent, session, response) {
@@ -113,7 +113,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     };
     
     intentHandlers.MyCancelIntent = function (intent, session, response) {
-        var speechOutput = "Goodbye. Thanks for using Fitness Logger.";
+        var speechOutput = "Goodbye. Thanks for using Appointment Skill.";
         response.tell(speechOutput);
     };
     
@@ -129,7 +129,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     };
 
     intentHandlers['AMAZON.StopIntent'] = function (intent, session, response) {
-        var speechOutput = "Goodbye. Thanks for using Fitness Logger.";
+        var speechOutput = "Goodbye. Thanks for using Appointment SKill.";
         response.tell(speechOutput);
     };
     
@@ -138,70 +138,5 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 /**
  * Calculates weight from user inputs.
  */
-var calculateWeight = function(intent) {
-    
-    var weight;
-    if(intent.slots.Weight.value !== undefined && !isNaN(intent.slots.Weight.value)) {        
-        if(intent.slots.WeightFraction.value !== undefined) {
-            if(intent.slots.WeightFraction.value == 'half') {
-                weight = parseInt(intent.slots.Weight.value) + .50;
-            } else if(intent.slots.WeightFraction.value == 'quarter') {
-                weight = parseInt(intent.slots.Weight.value) + .25;
-            } else {
-                weight = intent.slots.Weight.value;
-            }
-        } else if(intent.slots.WeightDecimal.value !== undefined 
-                && !isNaN(intent.slots.WeightDecimal.value)) {                
-            var places = 10;
-            for(var i=1; i<intent.slots.WeightDecimal.value.length; i++){
-                places = places*10;
-            }
-            
-            weight = parseInt(intent.slots.Weight.value) + 
-                (parseInt(intent.slots.WeightDecimal.value) / places); 
-            
-        } else {
-            weight = intent.slots.Weight.value;
-        }
-    } else {
-        weight = 0;
-    }
-    
-    return parseFloat(weight);
-};
-
-var calculateUnit = function(intent, weight) {
-    
-    if(weight === 0) {
-        return null;
-    }
-    
-    var unit;    
-    if(intent.slots.WeightUnit.value !== undefined) {
-        switch(intent.slots.WeightUnit.value) {
-            case 'pound':
-            case 'pounds':
-            case 'lb':
-            case 'lbs':
-                unit = "pound" + ((weight > 1) ? 's' : '');
-                break;                                                
-            case 'kg':
-            case 'kgs':
-            case 'kilo':
-            case 'kilos':
-            case 'kilogram':
-            case 'kilograms':
-                unit = "kilogram" + ((weight > 1) ? 's' : '');
-                break;                        
-            default:
-                unit = "pound" + ((weight > 1) ? 's' : '');
-                break;
-        }
-    } else {
-        unit = "pound" + ((weight > 1) ? 's' : '');
-    }
-    
-    return unit;
-}
 
 exports.register = registerIntentHandlers;
