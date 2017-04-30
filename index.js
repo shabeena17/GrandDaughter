@@ -1,39 +1,15 @@
-/**
- Copyright 2014-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
- Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-
- http://aws.amazon.com/apache2.0/
-
- or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- */
-
-/**
- * This sample shows how to create a simple Trivia skill with a multiple choice format. The skill
- * supports 1 player at a time, and does not support games across sessions.
- */
-
 'use strict';
-
-/**
- * When editing your questions pay attention to your punctuation. Make sure you use question marks or periods.
- * Make sure the first answer is the correct one. Set at least 4 answers, any extras will be shuffled in.
- */
+var request = require('request');
+var striptags = require('striptags');
+var unescape = require('unescape');
+const AWS = require('aws-sdk');
+const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
 
 // Route the incoming request based on type (LaunchRequest, IntentRequest,
 // etc.) The JSON body of the request is provided in the event parameter.
 exports.handler = function (event, context) {
     try {
         console.log("event.session.application.applicationId=" + event.session.application.applicationId);
-
-        /**
-         * Uncomment this if statement and populate with your skill's application ID to
-         * prevent someone else from configuring a skill that sends requests to this function.
-         */
-
-//     if (event.session.application.applicationId !== "amzn1.echo-sdk-ams.app.05aecccb3-1461-48fb-a008-822ddrt6b516") {
-//         context.fail("Invalid Application ID");
-//      }
 
         if (event.session.new) {
             onSessionStarted({requestId: event.request.requestId}, event.session);
@@ -64,9 +40,6 @@ exports.handler = function (event, context) {
  * Called when the session starts.
  */
 function onSessionStarted(sessionStartedRequest, session) {
-    console.log("onSessionStarted requestId=" + sessionStartedRequest.requestId
-        + ", sessionId=" + session.sessionId);
-
     // add any session init logic here
 }
 
@@ -74,8 +47,6 @@ function onSessionStarted(sessionStartedRequest, session) {
  * Called when the user invokes the skill without specifying what they want.
  */
 function onLaunch(launchRequest, session, callback) {
-    console.log("onLaunch requestId=" + launchRequest.requestId
-        + ", sessionId=" + session.sessionId);
     getWelcomeResponse(callback);
 }
 
@@ -83,31 +54,31 @@ function onLaunch(launchRequest, session, callback) {
  * Called when the user specifies an intent for this skill.
  */
 function onIntent(intentRequest, session, callback) {
-    console.log("onIntent requestId=" + intentRequest.requestId
-        + ", sessionId=" + session.sessionId);
 
-    var intent = intentRequest.intent,
-        intentName = intentRequest.intent.name;
-
-    // handle yes/no intent after the user has been prompted
-    if ("GetMotivationIntent" === intentName) {
-        console.log("inside onIntent");
-        handleNewMotivationRequest(intent, session, callback);
-        
-    }
-    if (session.attributes && session.attributes.userPromptedToContinue) {
-        delete session.attributes.userPromptedToContinue;
-        if ("AMAZON.NoIntent" === intentName) {
-            handleFinishSessionRequest(intent, session, callback);
-        } else if ("AMAZON.YesIntent" === intentName) {
-            handleRepeatRequest(intent, session, callback);
-        }
-    }
+    var intent = intentRequest.intent;
+    var intentName = intentRequest.intent.name;
 
     // dispatch custom intents to handlers here
-     
-    else if ("AMAZON.RepeatIntent" === intentName) {
-        handleRepeatRequest(intent, session, callback);
+    if ("LaunchGrandaughterIntent" == intentName) {
+        setNewUserRequest(intent, session, callback);
+    }
+    else if ("GetMotivationIntent" == intentName) {
+        handleMotivationRequest(intent, session, callback);
+    }
+    else if ("AppointmentIntent" == intentName) {
+        handleAppointmentRequest(intent, session, callback);
+    } 
+    else if ("WaterRecommendIntent" == intentName) {
+        handleWaterRecommendRequest(intent, session, callback);
+    } 
+    else if ("WaterConsumptionIntent" == intentName) {
+        handleWaterConsumptionRequest(intent, session, callback);
+    } 
+    else if ("WaterLeftIntent" == intentName) {
+        handleWaterLeftRequest(intent, session, callback);
+    } 
+    else if ("AMAZON.YesIntent" === intentName) {
+        handleMotivationRequest(intent, session, callback);
     } else if ("AMAZON.HelpIntent" === intentName) {
         handleGetHelpRequest(intent, session, callback);
     } else if ("AMAZON.StopIntent" === intentName) {
@@ -123,117 +94,196 @@ function onIntent(intentRequest, session, callback) {
  * Called when the user ends the session.
  * Is not called when the skill returns shouldEndSession=true.
  */
-function onSessionEnded(sessionEndedRequest, session) {
-    console.log("onSessionEnded requestId=" + sessionEndedRequest.requestId
-        + ", sessionId=" + session.sessionId);
-
-    // Add any cleanup logic here
-}
-
-// ------- Skill specific business logic -------
-
-var ANSWER_COUNT = 4;
-var GAME_LENGTH = 5;
-var CARD_TITLE = "Trivia"; // Be sure to change this for your skill.
 
 
-var mQuotes = ["Life is about making an impact, not making an income. --Kevin Kruse",
-"Whatever the mind of man can conceive and believe, it can achieve. –Napoleon Hill",
-"Strive not to be a success, but rather to be of value. –Albert Einstein",
-"Two roads diverged in a wood, and I—I took the one less traveled by, And that has made all the difference.  By Robert Frost",
-"I attribute my success to this: I never gave or took any excuse. –Florence Nightingale",
-"You miss 100% of the shots you don’t take. –Wayne Gretzky",
-"The most difficult thing is the decision to act, the rest is merely tenacity. –Amelia Earhart",
-"Every strike brings me closer to the next home run. –Babe Ruth"
-];
-
-function handleNewMotivationRequest(intent, session, callback) {
-	console.log("inside handleNewMotivationRequest");
-    // Get a random space fact from the space facts list
-    var mIndex = Math.floor(Math.random() * mQuotes.length); //Gets random Index
-    var randomFact = mQuotes[mIndex]; //Take Fact from List FACTS
-
-    // Create speech output
-    var speechOutput = "Here's a quote: " + randomFact;
-    var reprompt = "Got that?"
-    var shouldEndSession = true
-    var sessionAttributes = {}
-    //App 
-    var cardTitle = "Your Motivation";
-    //response.tellWithCard(speechOutput, cardTitle, speechOutput);
-
-    sessionAttributes = {
-        "speechOutput": speechOutput
-    };
-
-    console.log("before callback");
-    callback(sessionAttributes,
-        buildSpeechletResponse(cardTitle, speechOutput, reprompt, shouldEndSession));
-}
-
-
-
-
-
-
-
-// Create the handler that responds to the Alexa Request.
-//exports.handler = function (event, context) {
-    // Create an instance of the SpaceGeek skill.
-  //  var fact = new Fact();
-    //fact.execute(event, context);
-//};
-
+// ------- Skill specific logic -------
 
 function getWelcomeResponse(callback) {
-    var sessionAttributes = {},
-        speechOutput = "Welcome to Grand Daughter. How can I help?",
-        shouldEndSession = false,
-        repromptText = "";
-    speechOutput += repromptText;
-    sessionAttributes = {
-        "speechOutput": repromptText,
-        "repromptText": repromptText,
+    var welcomeSpeech = "Welcome to GrandDaughter!";
+    console.log(welcomeSpeech);
+    var reprompt = welcomeSpeech;
+    var shouldEndSession = false;
+    var sessionAttributes = {
+        "welcomeSpeech" : welcomeSpeech
     };
-    callback(sessionAttributes,
-        buildSpeechletResponse("Welcome", speechOutput, repromptText, shouldEndSession));
+    var header = "GrandDaughter";
+
+    callback(sessionAttributes, buildSpeechletResponse(header, welcomeSpeech, reprompt, shouldEndSession));
+}
+
+function setNewUserRequest(intent, session, callback)
+{
+    console.log("inside setNewUserRequest");
+    // var waterintake = 12;
+    // var speechOutput = "Your water intake for today should be " + waterintake+ " glasses with each glass being 16 ounces each";
+                
+    // var reprompt = "Do you want me to repeat that for you?";
+    // callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+     
+    console.log("existing setNewUserRequest");
+}
+
+/*
+ * source code referred from https://tinyurl.com/hktzmrz and https://tinyurl.com/hg8ykru
+ */
+function handleMotivationRequest(intent, session, callback) {
+    console.log("inside handleMotivationRequest");
+    getJSON(function(data) {
+        var speechOutput = "There is an error";
+        if (data != "ERROR") {
+            console.log('reached with an output');
+            console.log(data);
+            speechOutput = data;
+        } else {
+            console.log("Oops.. something went wrong");
+        }
+        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
+        
+    });
 }
 
 
-function handleRepeatRequest(intent, session, callback) {
-    // Repeat the previous speechOutput and repromptText from the session attributes if available
-    // else start a new game session
-    if (!session.attributes || !session.attributes.speechOutput) {
-        getWelcomeResponse(callback);
-    } else {
-        callback(session.attributes,
-            buildSpeechletResponseWithoutCard(session.attributes.speechOutput, session.attributes.repromptText, false));
+function handleAppointmentRequest(intent, session, callback) {
+    console.log("inside handleAppointmentRequest");
+     if(intent.slots.Appointment.value !== undefined) {        
+            var appointment = intent.slots.Appointment.value;
+            var date = intent.slots.Date.value;
+            var time = intent.slots.Time.value;
+                        
+            var data = {
+                'appointment'  : appointment,
+                'date'  : date,
+                'time'     : time,
+            }; 
+            console.log(data);
+
+            insertRecord(data,"Appointment",callback);
+            
+        } else {
+            var speechOutput1 = "You have to specify the appointment and the date. "+
+                "Please try again. You can say, doctor appointment on January first.";
+            var reprompt1 = "Please say your appointment.";
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+        }
+        console.log("ending handleAppointmentRequest");
+}
+ 
+function handleWaterRecommendRequest(intent, session, callback) {
+    console.log("inside handleWaterRecommendRequest");
+     //read from user table - weight and age
+     //calculate and insert in waterintake table - name, we
+     var waterintake = 12;
+     var speechOutput = "Your water intake for today should be " + waterintake+ " glasses with each glass being 16 ounces each";
+                
+     var reprompt = "Do you want me to repeat that for you?";
+     callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+     console.log("ending handleWaterRecommendRequest");
+}
+
+function handleWaterConsumptionRequest(intent, session, callback) {
+    console.log("inside handleWaterConsumptionRequest");
+     if(intent.slots.Water_Count.value !== undefined) {        
+            var watercount = intent.slots.Water_Count.value;
+                        
+            console.log('water count'+ watercount);
+
+            insertRecord(null,"WaterConsumption",callback);
+            
+        } else {
+            var speechOutput = "You have to specify the appointment and the date. "+
+                "Please try again. You can say, doctor appointment on January first.";
+            var reprompt = "Please say your appointment.";
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+        }
+        console.log("ending handleAppointmentRequest");
+}
+
+function handleWaterLeftRequest(intent, session, callback) {
+    console.log("inside handleWaterLeftRequest");
+    //read how much water the user has drank for the current date
+    var waterconsumed = 8;
+    var tobeconsumed = 12 ;
+     var speechOutput = "You have consumed "+waterconsumed+" glasses of water but you need to consume "+tobeconsumed+" more glasses of water for the day";
+     var reprompt = "Do you want me to repeat that for you";
+     
+     callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+     console.log("ending handleWaterLeftRequest");
+}
+
+function insertRecord(data,request,callback)
+{
+    var params = {};
+    if (request == "Appointment"){
+        params = {
+            Item: {
+                Date: data.date,
+                AppointmentType: data.appointment,
+                Time: data.time
+        },
+
+        TableName: "Appointments"
+    };
     }
+    else if (request == "WaterConsumption"){
+        params = {
+            Item: {
+                Name: "Shabeena",
+                TotalConsumed: 100,
+                ToBeConsumed: 200
+            },
+
+        TableName: "LogWaterIntake"
+    };
+    }
+    saveData(params,callback);
+    console.log('exiting insertRecord');
+
+}
+
+function saveData(params,callback){
+    console.log('entering saveData');
+    
+    docClient.put(params, function(err, data) {
+            if (err) {
+                callback(err,null);
+            } else {
+                callback(null,data);
+            }
+        });
+    console.log('ending saveData');
+    }
+
+// organize functions based on usage
+function getJSON(callback) {
+    request.get(getURL(), function(error, response, body) {
+        if (body.length > 0) {
+            var quote = getQuote(body);
+            callback(quote);
+        } else {
+            callback("ERROR");
+         }
+     });
+}
+
+function getURL() {
+    return "http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1";
+}
+
+function getQuote(responseBody) {
+    var result = JSON.parse(responseBody);
+    // use unescape to convert html entities to html charachters
+    var htmlString = unescape(result[0].content);
+
+    // use striptags to strip html from string
+    return striptags(htmlString);
 }
 
 function handleGetHelpRequest(intent, session, callback) {
-    // Provide a help prompt for the user, explaining how the game is played. Then, continue the game
-    // if there is one in progress, or provide the option to start another one.
-    
     // Ensure that session.attributes has been initialized
     if (!session.attributes) {
         session.attributes = {};
+
     }
-
-    // Set a flag to track that we're in the Help state.
-    session.attributes.userPromptedToContinue = true;
-
-    // Do not edit the help dialogue. This has been created by the Alexa team to demonstrate best practices.
-
-    var speechOutput = "I will ask you " + GAME_LENGTH + " multiple choice questions. Respond with the number of the answer. "
-        + "For example, say one, two, three, or four. To start a new game at any time, say, start game. "
-        + "To repeat the last question, say, repeat. "
-        + "Would you like to keep playing?",
-        repromptText = "To give an answer to a question, respond with the number of the answer . "
-        + "Would you like to keep playing?";
-        var shouldEndSession = false;
-    callback(session.attributes,
-        buildSpeechletResponseWithoutCard(speechOutput, repromptText, shouldEndSession));
 }
 
 function handleFinishSessionRequest(intent, session, callback) {
@@ -242,13 +292,8 @@ function handleFinishSessionRequest(intent, session, callback) {
         buildSpeechletResponseWithoutCard("Good bye!", "", true));
 }
 
-function isAnswerSlotValid(intent) {
-    var answerSlotFilled = intent.slots && intent.slots.Answer && intent.slots.Answer.value;
-    var answerSlotIsInt = answerSlotFilled && !isNaN(parseInt(intent.slots.Answer.value));
-    return answerSlotIsInt && parseInt(intent.slots.Answer.value) < (ANSWER_COUNT + 1) && parseInt(intent.slots.Answer.value) > 0;
-}
 
-// ------- Helper functions to build responses -------
+// ------- Helper functions to build responses for Alexa -------
 
 
 function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
@@ -295,4 +340,3 @@ function buildResponse(sessionAttributes, speechletResponse) {
         response: speechletResponse
     };
 }
-
