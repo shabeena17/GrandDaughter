@@ -9,7 +9,7 @@ const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
 // etc.) The JSON body of the request is provided in the event parameter.
 exports.handler = function (event, context) {
     try {
-        console.log("event.session.application.applicationId=" + event.session.application.applicationId);
+        console.log("event.session .application.applicationId=" + event.session.application.applicationId);
 
         if (event.session.new) {
             onSessionStarted({requestId: event.request.requestId}, event.session);
@@ -170,13 +170,46 @@ function handleAppointmentRequest(intent, session, callback) {
  
 function handleWaterRecommendRequest(intent, session, callback) {
     console.log("inside handleWaterRecommendRequest");
-     //read from user table - weight and age
+    
+    var params = {
+    TableName: 'User',
+    Key:{
+        "Name": "shabeena"
+    }
+    };
+
+    docClient.get(params, function(err, data) {
+        if (err) {
+            console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+            console.log(data);
+            console.log(data.Item.Weight);
+            var waterintake = Number(data.Item.Weight)*0.5;
+            var noofglasses = Math.round(waterintake / 16);
+
+            var dateFormat = require('dateformat');
+            var now = new Date();
+            
+
+
+            var params = {
+                'Name'  :  data.Item.Name,
+                'Date'  : "2017-05-05",
+                'WaterToBeConsumed' : noofglasses,
+                'WaterConsumed' : 0,
+            }; 
+
+            insertRecord(params,"WaterRecommendation",callback);
+
+            var speechOutput = "Your water intake for today should be " + noofglasses+ " glasses with each glass being 16 ounces each";
+            var reprompt = "Do you want me to repeat that for you?";
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+        }
+    });
+    
      //calculate and insert in waterintake table - name, we
-     var waterintake = 12;
-     var speechOutput = "Your water intake for today should be " + waterintake+ " glasses with each glass being 16 ounces each";
-                
-     var reprompt = "Do you want me to repeat that for you?";
-     callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+     
      console.log("ending handleWaterRecommendRequest");
 }
 
@@ -187,7 +220,7 @@ function handleWaterConsumptionRequest(intent, session, callback) {
                         
             console.log('water count'+ watercount);
 
-            insertRecord(null,"WaterConsumption",callback);
+            //update in the waterlogintake table
             
         } else {
             var speechOutput = "You have to specify the appointment and the date. "+
@@ -224,34 +257,30 @@ function insertRecord(data,request,callback)
         TableName: "Appointments"
     };
     }
-    else if (request == "WaterConsumption"){
+    else if (request == "WaterRecommendation"){
+        console.log('entering insertRecord for WaterRecommendation')
         params = {
             Item: {
-                Name: "Shabeena",
-                TotalConsumed: 100,
-                ToBeConsumed: 200
+                Name: data.Name,
+                Date: "2017-05-05",
+                WaterConsumed: data.WaterConsumed,
+                WaterToBeConsumed: data.WaterToBeConsumed,
+                
             },
 
         TableName: "LogWaterIntake"
     };
     }
-    saveData(params,callback);
+    docClient.put(params, function(err, data) {
+            if (err) {
+                console.log("Error occured in insertRecord", JSON.stringify(err, null, 2));
+            } else {
+                console.log("Put succeeded:", JSON.stringify(data, null, 2));
+            }
+        });
     console.log('exiting insertRecord');
 
 }
-
-function saveData(params,callback){
-    console.log('entering saveData');
-    
-    docClient.put(params, function(err, data) {
-            if (err) {
-                callback(err,null);
-            } else {
-                callback(null,data);
-            }
-        });
-    console.log('ending saveData');
-    }
 
 // organize functions based on usage
 function getJSON(callback) {
