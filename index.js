@@ -57,6 +57,7 @@ function onIntent(intentRequest, session, callback) {
 
     var intent = intentRequest.intent;
     var intentName = intentRequest.intent.name;
+    console.log(intentName);
 
     // dispatch custom intents to handlers here
     if ("AskGrandaughter" == intentName) {
@@ -66,19 +67,25 @@ function onIntent(intentRequest, session, callback) {
         handleMotivationRequest(intent, session, callback);
     }
     else if ("AppointmentIntent" == intentName) {
-        handleAppointmentRequest(intent, session, callback);
+        handleAppointmentRequest(session, callback);
     } 
     else if ("WaterRecommendIntent" == intentName) {
         handleWaterRecommendRequest(intent, session, callback);
+    } 
+    else if ("MedicineIntent" == intentName) {
+        handleMedicineDosageRequest(intent, session, callback);
+    } 
+    else if ("ReadAppIntent" == intentName) {
+        handleReadAppointment(intent, session, callback);
     } 
     else if ("WaterConsumptionIntent" == intentName) {
         handleWaterConsumptionRequest(intent, session, callback);
     } 
     else if ("WaterLeftIntent" == intentName) {
         handleWaterLeftRequest(intent, session, callback);
-    } 
-    else if ("ReadAppIntent" == intentName) {
-        handleReadAppointment(intent, session, callback);
+    }
+    else if ("ReadMedicineIntent" == intentName) {
+        handleReadMedicineDosage(intent, session, callback);
     }
     else if ("AMAZON.YesIntent" === intentName) {
         handleMotivationRequest(intent, session, callback);
@@ -114,15 +121,11 @@ function getWelcomeResponse(callback) {
     callback(sessionAttributes, buildSpeechletResponse(header, welcomeSpeech, reprompt, shouldEndSession));
 }
 
-function setNewUserRequest(intent, session, callback)
+function setNewUserRequest( session, callback)
 {
     console.log("inside setNewUserRequest");
-    var speechOutput = "";
-    speechOutput = "Welcome to GrandDaughter.Let's set your user profile";
-    callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", true));
-    speechOutput = "Please help me with the default username for this device";
-    callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", true));
-
+    var speechOutput = "Welcome to GrandDaughter. Let's set your user profile";
+    callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
     // var waterintake = 12;
     // var speechOutput = "Your water intake for today should be " + waterintake+ " glasses with each glass being 16 ounces each";
                 
@@ -177,12 +180,13 @@ function handleAppointmentRequest(intent, session, callback) {
         console.log("ending handleAppointmentRequest");
 }
  
- function handleReadAppointment(intent, session, callback) {
+ 
+
+function handleReadAppointment(intent, session, callback) {
     console.log("inside ReadAppIntent");
     var table = "Appointments";
     var today = new Date();
     var currentdate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-    console.log('day is '+currentdate)
 
     var params = {
         TableName : table,
@@ -199,13 +203,14 @@ function handleAppointmentRequest(intent, session, callback) {
         callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
     } else {
         console.log("Appointment data :", JSON.stringify(data,null, 2));
-        var speechOutput = "You have " + data.Item.AppointmentType + "appointment today at " +data.Item.Time;
+        var speechOutput = "You have" + data.Item.AppointmentType + "appointment today at" +data.Item.Time;
         var reprompt = "Do you want me to repeat that for you?";
         callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
         console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
     }
 });
 }
+ 
  
 function handleWaterRecommendRequest(intent, session, callback) {
     console.log("inside handleWaterRecommendRequest");
@@ -242,7 +247,7 @@ function handleWaterRecommendRequest(intent, session, callback) {
                 TableName: "WaterLogIntake"  
             }; 
 
-            insertRecord(params,"WaterRecommendation",callback);
+            //insertRecord(params,"WaterRecommendation",callback);
             docClient.put(params, function(err, data) {
             if (err) {
                 console.log("Error occured in insertRecord", JSON.stringify(err, null, 2));
@@ -301,6 +306,7 @@ function handleWaterConsumptionRequest(intent, session, callback) {
         console.log("ending handleAppointmentRequest");
 }
 
+
 function handleWaterLeftRequest(intent, session, callback) {
     console.log("inside handleWaterLeftRequest");
     var table = "WaterLogIntake";
@@ -336,6 +342,87 @@ function handleWaterLeftRequest(intent, session, callback) {
 }
 
 
+function handleMedicineDosageRequest(intent, session, callback) {
+    console.log("inside handleMedicineDosageRequest");
+    if(intent.slots.Medicine.value !== undefined) { 
+    var medicineName = intent.slots.Medicine.value;
+    var dosage = intent.slots.Dosage.value;
+    var frequency = intent.slots.Frequency.value;
+    var timeofday = intent.slots.TimeOfDay.value;
+    var instruction = intent.slots.Instruction.value;
+    var expirydate = intent.slots.ExpiryDate.value;
+
+    var data = {
+            'Medicine' : medicineName,
+            'Dosage' : dosage,
+            'Frequency' : frequency,
+            'TimeOfDay' : timeofday,
+            'Instruction' : instruction,
+            'ExpiryDate' : expirydate
+    };
+    console.log(data);
+    insertRecord(data,"MedicineDosage",callback);
+            
+        } else {
+            var speechOutput1 = "You have to specify the Medicine name and frequency. "+
+                "Please try again. You can say, 2 pills of ibuprofine 2 times a day at afternoon after meal everyday until july first.";
+            var reprompt1 = "Please say medicine schedule.";
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+        }
+        console.log("ending handleMedicineDosageRequest");
+}
+
+
+
+function handleReadMedicineDosage(intent, session, callback) {
+    console.log("inside ReadMedicineIntent");
+    var today = new Date();
+    var month = "";
+    
+    if(today.getMonth().toString().length == 1)
+        month = "0"+today.getMonth();
+    else
+        month = today.getMonth();
+    
+    var currentdate = today.getFullYear()+'-'+month+'-'+today.getDate();
+    console.log(currentdate);
+
+    var params = {
+        TableName: "MedicineDosage",
+        ProjectionExpression: "ExpiryDate, Medicine, Dosage, Instruction, Frequency, TimeOfDay",
+    };
+
+
+    docClient.scan(params, function(err, data) {
+    if (err) {
+        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+        var speechOutput1 = "You have no medicines to take today.Stay happy and healthy.";
+        var reprompt1 = "Do you want me to repeat that for you?";
+        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+    } else {
+           console.log("Scan succeeded.");
+           var firstmed = true
+           var speechOutput = ""
+           data.Items.forEach(function(row) {
+            if(currentdate < row.ExpiryDate)
+            {
+                if(firstmed)
+                {
+                    speechOutput = "You have "+Object.keys(data.Items).length+" medicines in your medicine schedule   "
+                    firstmed = false
+                } 
+                speechOutput = speechOutput.concat(row.Dosage+ " pills of " +row.Medicine+" "+row.Frequency +" times a day " +row.Instruction +" in the "+row.TimeOfDay+"      ");
+            }
+           });    
+            var reprompt = "Do you want me to repeat that for you?";
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+            console.log("Get Read succeeded:", JSON.stringify(data, null, 2));    
+        
+        console.log("Get medicine succeeded:", JSON.stringify(data, null, 2));
+    }
+});
+}
+
 function insertRecord(data,request,callback)
 {
     var params = {};
@@ -364,6 +451,22 @@ function insertRecord(data,request,callback)
         TableName: "LogWaterIntake"
     };
     }
+    if (request == "MedicineDosage"){
+        console.log('entering insertRecord for handleMedicineDosage record')
+        params = {
+            Item: {
+            Medicine : data.Medicine,
+            Dosage : data.Dosage,
+            Frequency : data.Frequency,
+            TimeOfDay : data.TimeOfDay,
+            Instruction : data.Instruction,
+            ExpiryDate : data.ExpiryDate
+        },
+
+        TableName: "MedicineDosage"
+    };
+    }
+
     docClient.put(params, function(err, data) {
             if (err) {
                 console.log("Error occured in insertRecord", JSON.stringify(err, null, 2));
