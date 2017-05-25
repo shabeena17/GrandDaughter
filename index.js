@@ -64,7 +64,7 @@ function onIntent(intentRequest, session, callback) {
         setNewUserRequest(intent, session, callback);
     }
     else if ("GetMotivationIntent" == intentName) {
-        handleMotivationRequest(intent, session, callback);
+        //handleMotivationRequest(intent, session, callback);
     }
     else if ("AppointmentIntent" == intentName) {
         handleAppointmentRequest(session, callback);
@@ -124,8 +124,9 @@ function getWelcomeResponse(callback) {
 function setNewUserRequest( session, callback)
 {
     console.log("inside setNewUserRequest");
-    var speechOutput = "Welcome to GrandDaughter. Let's set your user profile";
-    callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
+    var welcomeSpeech = "Welcome to GrandDaughter. Let's set your user profile";
+    //callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
+    buildSpeechletResponse("", welcomeSpeech, "", true);
     // var waterintake = 12;
     // var speechOutput = "Your water intake for today should be " + waterintake+ " glasses with each glass being 16 ounces each";
                 
@@ -161,6 +162,8 @@ function handleAppointmentRequest(intent, session, callback) {
             var appointment = intent.slots.Appointment.value;
             var date = intent.slots.Date.value;
             var time = intent.slots.Time.value;
+            var speechOutput = ""
+            var reprompt = ""
                         
             var data = {
                 'appointment'  : appointment,
@@ -170,13 +173,15 @@ function handleAppointmentRequest(intent, session, callback) {
             console.log(data);
 
             insertRecord(data,"Appointment",callback);
-            
+            speechOutput = "Great! We've got your appointement recorded in the calendar";
+            reprompt = "";
         } else {
-            var speechOutput1 = "You have to specify the appointment and the date. "+
+            speechOutput = "You have to specify the appointment and the date. "+
                 "Please try again. You can say, doctor appointment on January first.";
-            var reprompt1 = "Please say your appointment.";
-            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+            reprompt = "Please say your appointment.";
+            //callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
         }
+        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
         console.log("ending handleAppointmentRequest");
 }
  
@@ -196,7 +201,9 @@ function handleReadAppointment(intent, session, callback) {
     };
 
     docClient.get(params, function(err, data) {
-    if (err) {
+    console.log('inside read app method'+err)
+    console.log('inside read app method'+data)
+    if (err === null) {
         console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
         var speechOutput1 = "You have no appointments today";
         var reprompt1 = "Do you want me to repeat that for you?";
@@ -347,10 +354,17 @@ function handleMedicineDosageRequest(intent, session, callback) {
     if(intent.slots.Medicine.value !== undefined) { 
     var medicineName = intent.slots.Medicine.value;
     var dosage = intent.slots.Dosage.value;
+    if(dosage !== undefined)
+    {
+        dosage = 1;
+        console.log('dosage is now 1')
+    }
     var frequency = intent.slots.Frequency.value;
     var timeofday = intent.slots.TimeOfDay.value;
     var instruction = intent.slots.Instruction.value;
     var expirydate = intent.slots.ExpiryDate.value;
+    var speechOutput = ""
+    var reprompt = ""
 
     var data = {
             'Medicine' : medicineName,
@@ -361,14 +375,28 @@ function handleMedicineDosageRequest(intent, session, callback) {
             'ExpiryDate' : expirydate
     };
     console.log(data);
-    insertRecord(data,"MedicineDosage",callback);
-            
+    insertRecord(data, "MedicineDosage", function(result) {
+        var speechOutput = "There is an error";
+        if (result != "ERROR") {
+            console.log('reached with an output');
+            console.log(result);
+            speechOutput = "Great! We have your medicine routine recorded in our system!";
         } else {
-            var speechOutput1 = "You have to specify the Medicine name and frequency. "+
-                "Please try again. You can say, 2 pills of ibuprofine 2 times a day at afternoon after meal everyday until july first.";
-            var reprompt1 = "Please say medicine schedule.";
-            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+            console.log("Oops.. something went wrong");
+            speechOutput = "Oops.. something went wrong";
         }
+        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "", false));
+    });
+    
+            
+    } 
+    else 
+    {
+        speechOutput = "You have to specify the Medicine name and frequency. "+
+            "Please try again. You can say, 2 pills of ibuprofine 2 times a day at afternoon after meal everyday until july first.";
+        reprompt = "Please say medicine schedule.";
+        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+    }
         console.log("ending handleMedicineDosageRequest");
 }
 
@@ -469,13 +497,15 @@ function insertRecord(data,request,callback)
 
     docClient.put(params, function(err, data) {
             if (err) {
-                console.log("Error occured in insertRecord", JSON.stringify(err, null, 2));
+                console.log("Error occured in insertRecord", err);
+                callback("ERROR");
             } else {
                 console.log("Put succeeded:", JSON.stringify(data, null, 2));
+                callback("SUCCESS");
             }
         });
     console.log('exiting insertRecord');
-
+    
 }
 
 // organize functions based on usage
