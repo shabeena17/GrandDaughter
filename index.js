@@ -64,10 +64,10 @@ function onIntent(intentRequest, session, callback) {
         setNewUserRequest(intent, session, callback);
     }
     else if ("GetMotivationIntent" == intentName) {
-        //handleMotivationRequest(intent, session, callback);
+        handleMotivationRequest(intent, session, callback);
     }
     else if ("AppointmentIntent" == intentName) {
-        handleAppointmentRequest(session, callback);
+        handleAppointmentRequest(intent,session, callback);
     } 
     else if ("WaterRecommendIntent" == intentName) {
         handleWaterRecommendRequest(intent, session, callback);
@@ -156,12 +156,12 @@ function handleMotivationRequest(intent, session, callback) {
 
 
 function handleAppointmentRequest(intent, session, callback) {
-    console.log("inside handleAppointmentRequest");
-     if(intent.slots.Appointment.value !== undefined) {        
+     if(intent.slots.Appointment.value !== undefined) {
+            console.log('appointment');
             var appointment = intent.slots.Appointment.value;
             var date = intent.slots.Date.value;
             var time = intent.slots.Time.value;
-            var speechOutput = ""
+            //var speechOutput = ""
             var reprompt = ""
                         
             var data = {
@@ -170,40 +170,57 @@ function handleAppointmentRequest(intent, session, callback) {
                 'time'     : time,
             }; 
             console.log(data);
-
-            insertRecord(data,"Appointment",callback);
-            speechOutput = "Great! We've got your appointement recorded in the calendar";
-            reprompt = "";
+            
+            //speechOutput = "Great! We've got your appointement recorded in the calendar";
+            insertRecord(data,"Appointment",function(result) {
+            var speechOutput = "There is an error";
+            if (result != "ERROR") {
+                console.log('reached with an output');
+                console.log(result);
+                speechOutput = "Great! We have your appointment recorded in our system!";
+            } 
+            else {
+            console.log("Oops.. something went wrong.Please try again");
+            speechOutput = "Oops.. something went wrong.Please try again";
+            }
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "", false));
+    });
+            
         } else {
-            speechOutput = "You have to specify the appointment and the date. "+
+            var speechOutput1 = "You have to specify the appointment and the date. "+
                 "Please try again. You can say, doctor appointment on January first.";
-            reprompt = "Please say your appointment.";
+            var reprompt1 = "Please say your appointment.";
             //callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
         }
-        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+        
         console.log("ending handleAppointmentRequest");
 }
  
  
 
 function handleReadAppointment(intent, session, callback) {
-    console.log("inside ReadAppIntent");
-    var table = "Appointments";
     var today = new Date();
-    var currentdate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    var month = "";
+    
+    if((today.getMonth()+1).toString().length == 1)
+        month = "0"+(today.getMonth()+1);
+    else
+        month = (today.getMonth()+1);
+    
+    var currentdate = today.getFullYear()+'-'+month+'-'+today.getDate();
+    console.log(currentdate);
 
     var params = {
-        TableName : table,
+        TableName : "Appointments",
         Key:{
             "Date" : currentdate
         }
     };
-
+    console.log(currentdate);
     docClient.get(params, function(err, data) {
-    console.log('inside read app method'+err)
-    console.log('inside read app method'+data)
     if (err === null) {
-        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+        console.error(err);
         var speechOutput1 = "You have no appointments today";
         var reprompt1 = "Do you want me to repeat that for you?";
         callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
@@ -280,8 +297,6 @@ function handleWaterRecommendRequest(intent, session, callback) {
 }
 
 
-
-
 function handleWaterConsumptionRequest(intent, session, callback) {
     console.log("inside handleWaterConsumptionRequest");
      if(intent.slots.Water_Count.value !== undefined) {        
@@ -304,13 +319,18 @@ function handleWaterConsumptionRequest(intent, session, callback) {
             };
 
             console.log("Updating the item...");
-            docClient.update(params, function(err, data) {
-                if (err) {
-                    console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
-                } else {
-                    console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
-                }
-            });
+            docClient.update(params, function(result) {
+            var speechOutput = "There is an error";
+            if (result != "ERROR") {
+                console.log('reached with an output');
+                console.log(result);
+                speechOutput = "Great! We've updated your water intake for the day. Keep drinking more water";
+            } else {
+                console.log("Oops.. something went wrong");
+                speechOutput = "Oops.. something went wrong";
+            }
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "", false));
+        });
             
             } else {
                 var speechOutput = "You have to specify the appointment and the date. "+
@@ -320,7 +340,6 @@ function handleWaterConsumptionRequest(intent, session, callback) {
             }
         console.log("ending handleAppointmentRequest");
 }
-
 
 function handleWaterLeftRequest(intent, session, callback) {
     console.log("inside handleWaterLeftRequest");
@@ -401,8 +420,6 @@ function handleMedicineDosageRequest(intent, session, callback) {
         }
         console.log("ending handleMedicineDosageRequest");
 }
-
-
 
 function handleReadMedicineDosage(intent, session, callback) {
     console.log("inside ReadMedicineIntent");
