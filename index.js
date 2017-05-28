@@ -124,9 +124,8 @@ function getWelcomeResponse(callback) {
 function setNewUserRequest( session, callback)
 {
     console.log("inside setNewUserRequest");
-    var welcomeSpeech = "Welcome to GrandDaughter. Let's set your user profile";
-    //callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
-    buildSpeechletResponse("", welcomeSpeech, "", true);
+    var speechOutput = "Welcome to GrandDaughter. Let's set your user profile";
+    callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
     // var waterintake = 12;
     // var speechOutput = "Your water intake for today should be " + waterintake+ " glasses with each glass being 16 ounces each";
                 
@@ -218,61 +217,70 @@ function handleReadAppointment(intent, session, callback) {
 });
 }
  
- 
 function handleWaterRecommendRequest(intent, session, callback) {
     console.log("inside handleWaterRecommendRequest");
-    
+
+//scanning the user table
     var params = {
-    TableName: 'User',
-    Key:{
-        "Name": "shabeena"
-    }
+        TableName: "User_Main",
+        ProjectionExpression: "Name1, Weight",
     };
 
-    docClient.get(params, function(err, data) {
-        if (err) {
-            console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-        } else {
-            console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
-            console.log(data);
-            console.log(data.Item.Weight);
-            var waterintake = Number(data.Item.Weight)*0.5;
-            var noofglasses = Math.round(waterintake / 16);
+    docClient.scan(params, function(err,data){
+        if(err){
+            console.error("Could'nt fetch the user name for User Table:", JSON.stringify(err, null, 2));
+            var speechOutput1 = "I could'nt fetch the User name";
+            var reprompt1 = "Do you want me to repeat that for you?";
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+    } else {
+           console.log("User name fetched successfully",JSON.stringify(data, null, 2));
+           var user_name = ""
+           var user_weight = ""
+           data.Items.forEach(function(row) {
+           user_name = row.Name1;
+           user_weight = row.Weight;
+           console.log("Fetched user weight is :" +user_weight);
+           console.log("Fetched user name is :" +user_name);
+           });
 
+           var waterintake = Number(user_weight)*0.5;
+           var noofglasses = Math.round(waterintake / 16);
+            
             var today = new Date();
             var currentdate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
             console.log(currentdate);
+            console.log(waterintake);
+            console.log(noofglasses);
             
-            var params = {
-                Item: {
-                Date: currentdate,
-                Name: data.Item.Name,
-                WaterConsumed: "0",
-                WaterToBeConsumed: noofglasses
-                },
+           var params = {
+                'Date' : currentdate,
+                'Name': user_name,
+                'WaterConsumed' : "0",
+                'WaterToBeConsumed' : noofglasses
+            };
+            
+            console.log(params);
 
-                TableName: "WaterLogIntake"  
-            }; 
-
-            //insertRecord(params,"WaterRecommendation",callback);
-            docClient.put(params, function(err, data) {
-            if (err) {
-                console.log("Error occured in insertRecord", JSON.stringify(err, null, 2));
-            } else {
-                console.log("Put succeeded:", JSON.stringify(data, null, 2));
-            }
-            });
-
+            insertRecord(params,"WaterRecommendation",callback);
+            // docClient.put(params, function(err, data) {
+            // if (err) {
+            //     console.log("Error occured in insertRecord", JSON.stringify(err, null, 2));
+            // } else {
+            //     console.log("Put succeeded:", JSON.stringify(data, null, 2));
+            // }
+            // });
+            
             var speechOutput = "Your water intake for today should be " + noofglasses+ " glasses with each glass being 16 ounces each";
             var reprompt = "Do you want me to repeat that for you?";
             callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
         }
     });
-    
      //calculate and insert in waterintake table - name, we
-     
      console.log("ending handleWaterRecommendRequest");
 }
+
+
+
 
 function handleWaterConsumptionRequest(intent, session, callback) {
     console.log("inside handleWaterConsumptionRequest");
@@ -289,7 +297,7 @@ function handleWaterConsumptionRequest(intent, session, callback) {
             },
 
             UpdateExpression: "set WaterConsumed = :r",
-            ExpressionAttributeValues:{
+                ExpressionAttributeValues:{
                 ":r":watercount
             },
             ReturnValues:"UPDATED_NEW"
@@ -354,17 +362,14 @@ function handleMedicineDosageRequest(intent, session, callback) {
     if(intent.slots.Medicine.value !== undefined) { 
     var medicineName = intent.slots.Medicine.value;
     var dosage = intent.slots.Dosage.value;
-    if(dosage !== undefined)
-    {
+    if(dosage === undefined)
         dosage = 1;
-        console.log('dosage is now 1')
-    }
     var frequency = intent.slots.Frequency.value;
+    if(frequency === undefined)
+        frequency = 1;
     var timeofday = intent.slots.TimeOfDay.value;
     var instruction = intent.slots.Instruction.value;
     var expirydate = intent.slots.ExpiryDate.value;
-    var speechOutput = ""
-    var reprompt = ""
 
     var data = {
             'Medicine' : medicineName,
@@ -387,16 +392,13 @@ function handleMedicineDosageRequest(intent, session, callback) {
         }
         callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "", false));
     });
-    
             
-    } 
-    else 
-    {
-        speechOutput = "You have to specify the Medicine name and frequency. "+
-            "Please try again. You can say, 2 pills of ibuprofine 2 times a day at afternoon after meal everyday until july first.";
-        reprompt = "Please say medicine schedule.";
-        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
-    }
+    } else {
+            var speechOutput1 = "You have to specify the Medicine name and frequency. "+
+                "Please try again. You can say, 2 pills of ibuprofine 2 times a day at afternoon after meal everyday until july first.";
+            var reprompt1 = "Please say medicine schedule.";
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+        }
         console.log("ending handleMedicineDosageRequest");
 }
 
@@ -469,16 +471,15 @@ function insertRecord(data,request,callback)
         console.log('entering insertRecord for WaterRecommendation')
         params = {
             Item: {
+                Date: data.Date,
                 Name: data.Name,
-                // Date: "2017-05-05",
-                // WaterConsumed: data.WaterConsumed,
-                // WaterToBeConsumed: data.WaterToBeConsumed,
-                
+                WaterConsumed: data.WaterConsumed,
+                WaterToBeConsumed: data.WaterToBeConsumed,
             },
-
-        TableName: "LogWaterIntake"
-    };
+        TableName: "WaterLogIntake"
+        };
     }
+    
     if (request == "MedicineDosage"){
         console.log('entering insertRecord for handleMedicineDosage record')
         params = {
@@ -505,7 +506,7 @@ function insertRecord(data,request,callback)
             }
         });
     console.log('exiting insertRecord');
-    
+
 }
 
 // organize functions based on usage
