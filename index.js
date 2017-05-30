@@ -43,6 +43,13 @@ function onSessionStarted(sessionStartedRequest, session) {
     // add any session init logic here
 }
 
+function onSessionEnded(sessionEndedRequest, session) {
+     console.log("onSessionEnded requestId=" + sessionEndedRequest.requestId
+         + ", sessionId=" + session.sessionId);
+ 
+     // Add any cleanup logic here
+ }
+
 /**
  * Called when the user invokes the skill without specifying what they want.
  */
@@ -60,10 +67,11 @@ function onIntent(intentRequest, session, callback) {
     console.log(intentName);
 
     // dispatch custom intents to handlers here
-    if ("AskGrandaughter" == intentName) {
-        setNewUserRequest(intent, session, callback);
-    }
-    else if ("GetMotivationIntent" == intentName) {
+    // if ("AskGrandaughter" == intentName) {
+    //     setNewUserRequest(intent, session, callback);
+    // }
+    // else 
+    if ("GetMotivationIntent" == intentName) {
         handleMotivationRequest(intent, session, callback);
     }
     else if ("AppointmentIntent" == intentName) {
@@ -88,8 +96,9 @@ function onIntent(intentRequest, session, callback) {
         handleReadMedicineDosage(intent, session, callback);
     }
     else if ("AMAZON.YesIntent" === intentName) {
-        handleMotivationRequest(intent, session, callback);
-    } else if ("AMAZON.HelpIntent" === intentName) {
+        handleRepeatRequest(intent, session, callback);
+    }
+    else if ("AMAZON.HelpIntent" === intentName) {
         handleGetHelpRequest(intent, session, callback);
     } else if ("AMAZON.StopIntent" === intentName) {
         handleFinishSessionRequest(intent, session, callback);
@@ -121,6 +130,17 @@ function getWelcomeResponse(callback) {
     callback(sessionAttributes, buildSpeechletResponse(header, welcomeSpeech, reprompt, shouldEndSession));
 }
 
+function handleRepeatRequest(intent, session, callback) {
+     // Repeat the previous speechOutput and repromptText from the session attributes if available
+    // else start a new game session
+    if (!session.attributes || !session.attributes.speechOutput) {
+         getWelcomeResponse(callback);
+     } else {
+         callback(session.attributes,
+             buildSpeechletResponseWithoutCard(session.attributes.speechOutput, session.attributes.repromptText, false));
+     }
+ }
+
 function setNewUserRequest( session, callback)
 {
     console.log("inside setNewUserRequest");
@@ -138,25 +158,60 @@ function setNewUserRequest( session, callback)
 /*
  * source code referred from https://tinyurl.com/hktzmrz and https://tinyurl.com/hg8ykru
  */
-function handleMotivationRequest(intent, session, callback) {
-    console.log("inside handleMotivationRequest");
-    getJSON(function(data) {
-        var speechOutput = "There is an error";
-        if (data != "ERROR") {
-            console.log('reached with an output');
-            console.log(data);
-            speechOutput = data;
-        } else {
-            console.log("Oops.. something went wrong");
-        }
-        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
+// function handleMotivationRequest(intent, session, callback) {
+//     console.log("inside handleMotivationRequest");
+//     getJSON(function(data) {
+//         var speechOutput = "There is an error";
+//         if (data != "ERROR") {
+//             console.log('reached with an output');
+//             console.log(data);
+//             speechOutput = data;
+//         } else {
+//             console.log("Oops.. something went wrong");
+//         }
+//         callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
         
-    });
-}
+//     });
+// }
 
+ var mQuotes = ["Life is about making an impact, not making an income. --Kevin Kruse",
+ "Whatever the mind of man can conceive and believe, it can achieve. –Napoleon Hill",
+ "Strive not to be a success, but rather to be of value. –Albert Einstein",
+ "Two roads diverged in a wood, and I—I took the one less traveled by, And that has made all the difference.  By Robert Frost",
+ "I attribute my success to this: I never gave or took any excuse. –Florence Nightingale",
+ "You miss 100% of the shots you don’t take. –Wayne Gretzky",
+ "The most difficult thing is the decision to act, the rest is merely tenacity. –Amelia Earhart",
+ "Every strike brings me closer to the next home run. –Babe Ruth"
+ ];
+
+function handleMotivationRequest(intent, session, callback) {
+ 	console.log("inside handleNewMotivationRequest");
+     // Get a random space fact from the space facts list
+     var mIndex = Math.floor(Math.random() * mQuotes.length); //Gets random Index
+     var randomFact = mQuotes[mIndex]; //Take Fact from List FACTS
+ 
+     // Create speech output
+     var speechOutput = "Here's a quote: " + randomFact;
+     var reprompt = "Got that?"
+     var shouldEndSession = true
+     var sessionAttributes = {}
+     //App 
+     var cardTitle = "Your Motivation";
+     //response.tellWithCard(speechOutput, cardTitle, speechOutput);
+ 
+     sessionAttributes = {
+         "speechOutput": speechOutput
+     };
+ 
+     console.log("before callback");
+     callback(sessionAttributes,
+         buildSpeechletResponse(cardTitle, speechOutput, reprompt, shouldEndSession));
+ }
+ 
 
 function handleAppointmentRequest(intent, session, callback) {
-     if(intent.slots.Appointment.value !== undefined) {
+     if(intent.slots.Appointment.value !== undefined && intent.slots.Time.value !== undefined && 
+     intent.slots.Date.value !== undefined) {
             console.log('appointment');
             var appointment = intent.slots.Appointment.value;
             var date = intent.slots.Date.value;
@@ -201,6 +256,12 @@ function handleAppointmentRequest(intent, session, callback) {
 
 function handleReadAppointment(intent, session, callback) {
     var today = new Date();
+    var utcDate = new Date(today.toUTCString());
+    utcDate.setHours(utcDate.getHours()-7);
+    var usDate = new Date(utcDate);
+    console.log('usDate'+usDate);
+    
+    
     var month = "";
     
     if((today.getMonth()+1).toString().length == 1)
@@ -210,28 +271,70 @@ function handleReadAppointment(intent, session, callback) {
     
     var currentdate = today.getFullYear()+'-'+month+'-'+today.getDate();
     console.log(currentdate);
-
+    
     var params = {
-        TableName : "Appointments",
-        Key:{
-            "Date" : currentdate
-        }
+        TableName: "UserAppointments",
+        ProjectionExpression: "ApptDate, ApptTime, AppointmentType",
     };
-    console.log(currentdate);
-    docClient.get(params, function(err, data) {
-    if (err === null) {
-        console.error(err);
-        var speechOutput1 = "You have no appointments today";
+
+    docClient.scan(params, function(err, data) {
+    if (err) {
+        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+        var speechoutput = "You have no appointments for today";
         var reprompt1 = "Do you want me to repeat that for you?";
-        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+        callback(session.attributes, buildSpeechletResponse("some_Header", speechoutput, reprompt1, false));
     } else {
-        console.log("Appointment data :", JSON.stringify(data,null, 2));
-        var speechOutput = "You have" + data.Item.AppointmentType + "appointment today at" +data.Item.Time;
-        var reprompt = "Do you want me to repeat that for you?";
-        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
-        console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+           console.log("Scan succeeded.");
+           var firstapp = true;
+           var speechOutput = "";
+           var speechOutput1 = "";
+           var speechOutput2 = "";
+           var count = 0;
+           data.Items.forEach(function(row) {
+            if(row.ApptDate === currentdate)
+            {
+                count = count + 1; 
+                speechOutput2 = speechOutput2.concat("You have "+row.AppointmentType+ " appointment on " +row.ApptDate+" at "+row.ApptTime);
+            }
+            
+           });    
+            speechOutput1 = "You have "+count+" appointments in your schedule ";
+            speechOutput1 = speechOutput1.concat(speechOutput2);
+            console.log(speechOutput);
+            var reprompt = "Do you want me to repeat that for you?";
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt, false));
+            console.log("Get Read succeeded:", JSON.stringify(data, null, 2));    
+        
+        console.log("Get medicine succeeded:", JSON.stringify(data, null, 2));
     }
 });
+
+//     var params = {
+//         TableName : "Appointments",
+//         Key:{
+//             "Date" : currentdate
+//         }
+//     };
+//     console.log(currentdate);
+//     docClient.get(params, function(err, data) {
+//     if (err) 
+//     {
+//         console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+//         var speechOutput1 = "You have no appointments today";
+//         var reprompt1 = "Do you want me to repeat that for you?";
+//         callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+//     } 
+//     else 
+//     {
+//         console.log("Appointment data :", JSON.stringify(data,null, 2));
+//         var speechOutput = "You have " + data.Item.AppointmentType + " appointment today at " +data.Item.Time;
+//         var reprompt = "Do you want me to repeat that for you?";
+//         callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+//         console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+//     }
+// });
+
+    
 }
  
 function handleWaterRecommendRequest(intent, session, callback) {
@@ -378,7 +481,7 @@ function handleWaterLeftRequest(intent, session, callback) {
 
 function handleMedicineDosageRequest(intent, session, callback) {
     console.log("inside handleMedicineDosageRequest");
-    if(intent.slots.Medicine.value !== undefined) { 
+    if(intent.slots.Medicine.value !== undefined && intent.slots.ExpiryDate.value !== undefined && intent.slots.Instruction.value !== undefined) { 
     var medicineName = intent.slots.Medicine.value;
     var dosage = intent.slots.Dosage.value;
     if(dosage === undefined)
@@ -413,8 +516,9 @@ function handleMedicineDosageRequest(intent, session, callback) {
     });
             
     } else {
-            var speechOutput1 = "You have to specify the Medicine name and frequency. "+
-                "Please try again. You can say, 2 pills of ibuprofine 2 times a day at afternoon after meal everyday until july first.";
+            var speechOutput1 = "You have to specify the Medicine name , schedule expiry date, Instruction and time of the day. "+
+                "Please try again. You can say something like,  record two pills of Zquil after meal everyday in the afternoon until July 31st"+
+                "Or say record two pills of ibuprofine for three times a day before meal until August 10th";
             var reprompt1 = "Please say medicine schedule.";
             callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
         }
@@ -443,26 +547,33 @@ function handleReadMedicineDosage(intent, session, callback) {
     docClient.scan(params, function(err, data) {
     if (err) {
         console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-        var speechOutput1 = "You have no medicines to take today.Stay happy and healthy.";
+        var speechoutput = "You have no medicines to take today.Stay happy and healthy.";
         var reprompt1 = "Do you want me to repeat that for you?";
-        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt1, false));
+        callback(session.attributes, buildSpeechletResponse("some_Header", speechoutput, reprompt1, false));
     } else {
            console.log("Scan succeeded.");
-           var firstmed = true
-           var speechOutput = ""
+           var firstmed = true;
+           var speechOutput = "";
+           var speechOutput1 = "";
+           var speechOutput2 = "";
+           var count = 0;
            data.Items.forEach(function(row) {
             if(currentdate < row.ExpiryDate)
-            {
+            {   
+                count = count + 1;
                 if(firstmed)
                 {
-                    speechOutput = "You have "+Object.keys(data.Items).length+" medicines in your medicine schedule   "
-                    firstmed = false
+                    //speechOutput = "You have "+Object.keys(data.Items).length+" medicines in your medicine schedule   "
+                    firstmed = false;
                 } 
-                speechOutput = speechOutput.concat(row.Dosage+ " pills of " +row.Medicine+" "+row.Frequency +" times a day " +row.Instruction +" in the "+row.TimeOfDay+"      ");
+                speechOutput2 = speechOutput2.concat(row.Dosage+ " pills of " +row.Medicine+" "+row.Frequency +" times a day " +row.Instruction +" in the "+row.TimeOfDay+"      ");
             }
            });    
+            speechOutput1 = "You have "+count+" medicines in your medicine schedule ";
+            speechOutput1 = speechOutput1.concat(speechOutput2);
+            console.log(speechOutput);
             var reprompt = "Do you want me to repeat that for you?";
-            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, reprompt, false));
+            callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput1, reprompt, false));
             console.log("Get Read succeeded:", JSON.stringify(data, null, 2));    
         
         console.log("Get medicine succeeded:", JSON.stringify(data, null, 2));
@@ -476,12 +587,12 @@ function insertRecord(data,request,callback)
     if (request == "Appointment"){
         params = {
             Item: {
-                Date: data.date,
+                ApptDate: data.date,
                 AppointmentType: data.appointment,
-                Time: data.time
+                ApptTime: data.time
         },
 
-        TableName: "Appointments"
+        TableName: "UserAppointments"
     };
     }
     if (request == "WaterRecommendation"){
