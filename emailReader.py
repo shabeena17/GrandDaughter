@@ -3,10 +3,13 @@ from flask_restful import reqparse, abort, Api, Resource
 import json
 import re
 import logging
+import string
 import errno
 import gmail 
 import datetime
+import ast
 import json
+from flask import jsonify
 from bs4 import BeautifulSoup
 import warnings
 warnings.filterwarnings('ignore')
@@ -54,7 +57,7 @@ def pageNotFound(e):
     """
     #Default 404 Error
     logger.info('Deafault page 404')
-    return json.dumps("{Error:[ Message: No Endpoint Here]}")
+    return jsonify("{Error:[ Message: No Endpoint Here]}")
 
 
 ## LOGIN CREDENTIALS
@@ -62,11 +65,12 @@ def pageNotFound(e):
 
 def credentialsFetch():
     """
-    Fetches Username and Password From DB
+    Fetches Username and Password From DB/temp
     """
     username = "gd4alexa@gmail.com"
     password = "alexa1234"
     return [username, password]
+
 
 def Account():
     username, password = credentialsFetch()
@@ -74,13 +78,15 @@ def Account():
         emailObj = gmail.login(username, password)
         if emailObj.logged_in:
             print "Successfully Signed In"
-            return json.dumps("{Status: ['SUCCESS':'Logged In']}")
+            return emailObj
             #return emailObj
         else:
-            return json.dumps("{Status: ['FAILED':'Authentication Failed']}")
+            return jsonify("{Status: ['FAILED':'Authentication Failed']}")
             return emailObj
     except Exception as e:
-        print "Authentication Failed. Please try again!"
+        return jsonify("{Status: ['FAILED':'Authentication Failed: Exception Occured']}")
+
+
 
 class login(Resource):
     """Class login endpoint for Post Requests
@@ -100,60 +106,73 @@ class login(Resource):
         return Account()
 
 
-#Read Email Body
-def readEmail(emailsObj):
-    if numEmails(emailsObj)==0:
-        print "No new Emails"
-    else:
-        for email in emailsObj:
-            print "\n"
-            email.fetch() # can also unread(), delete(), spam(), or star()
-            unclean = email.body
-            soup = BeautifulSoup(unclean)
-            [s.extract() for s in soup(['style', 'script', '[document]', 'head', 'title'])]
-            visible_text = re.sub('\s+', ' ', soup.getText()).replace(u'\xa0', u' ')
-            visible_text = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', visible_text)
-            print visible_text.encode('ascii', 'ignore') 
+## READ FUNCTIONS
+# ----------------
 
-#Read Email Subjects
-def readNewSubjects(emailsObj):
-    #print len(emailsObj)
+def makeJson(listofEmails):
+    print 'Inside Json-er'
+    output = jsonify({'emails':[{'from':k[0],
+            'date':k[1],
+            'subject':k[2],
+            'body':k[3]
+            } for k in listofEmails]})
+    print output
+    return output
+
+
+#Read Email
+def readEmail(emailsObj):
+    emailList = []
     if len(emailsObj)==0:
         print "No new Emails"
     else:
         for email in emailsObj:
-            print "\n"
-            email.fetch()
-            print email.subject 
+            email.fetch() # can also unread(), delete(), spam(), or star()
+            unclean = email.body
+            soup = BeautifulSoup(str(unclean))
+            [s.extract() for s in soup(['style', 'script', '[document]', 'head', 'title'])]
+            visible_text = re.sub('\s+', ' ', soup.getText()).replace(u'\xa0', u' ')
+            visible_text = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', visible_text)
+            emailList.append([email.fr, 
+                            email.sent_at.strftime('%d %B %Y'), 
+                            email.subject, 
+                            visible_text.encode('ascii', 'ignore')])
+        # print emailList
+    return makeJson(emailList)
+
 
 
 ## FILTERS
 # ----------
 
 #Read Unread Emails
-def readUnreadEmails(obj):
-    return readEmail(obj.all_mail().mail(unread=True))
+# def readUnreadEmails(obj):
+#     return readEmail(obj.all_mail().mail(unread=True))
 
-#Read Emails From Email
-def emailFrom(obj,fromEmail):
-    return readEmail(obj.all_mail().mail(sender=fromEmail))
+# #Read Emails From Email
+# def emailFrom(obj,fromEmail):
+#     return readEmail(obj.all_mail().mail(sender=fromEmail))
 
-#Read Emails Sent To
-def emailTo(obj,toEmail):
-    return readEmail(obj.all_mail().mail(to=toEmail)) 
+# #Read Emails Sent To
+# def emailTo(obj,toEmail):
+#     return readEmail(obj.all_mail().mail(to=toEmail)) 
 
-#Read Emails From a Date
-def emailOn(obj, onDate): #datetime.date(2009, 1, 1)
-    return readEmail(obj.all_mail().mail(on=onDate))
+# #Read Emails From a Date
+# def emailOn(obj, onDate): #datetime.date(2009, 1, 1)
+#     return readEmail(obj.all_mail().mail(on=onDate))
 
-#Read Emails Between Dates
-def emailBetween(obj, fromDate, tillDate): #datetime.date(2013, 6, 18)
-    return readEmail(obj.all_mail().mail(after=fromDate, before=tillDate))
+# #Read Emails Between Dates
+# def emailBetween(obj, fromDate, tillDate): #datetime.date(2013, 6, 18)
+#     return readEmail(obj.all_mail().mail(after=fromDate, before=tillDate))
 
 def getEmail(obj, builder):
-    r = eval('obj.all_mail().mail('+builder+')')
-    print r
-    return readNewSubjects(r)
+    print "Inside getEmail"
+    print builder
+    r = obj.all_mail().mail(**builder)
+    # print namestr(r, globals())
+    return readEmail(r)
+
+
 
 class emailReader(Resource):
     """Class EmailReader endpoint for Post Requests
@@ -163,31 +182,59 @@ class emailReader(Resource):
         """Handles the Post Request functionality
 
         Args:
-            Passed in {unread = True, sender= rf@xyz.com, to=wef@gmail.com, on=datetime.date(2009, 1, 1), after=datetime.date(2009, 1, 1),before=datetime.date(2009, 1, 1)} format
+            Passed in 
+            {   unread= True, 
+                sender= rf@xyz.com, 
+                to= wef@gmail.com, 
+                on= datetime.date(2009, 1, 1), 
+                after= datetime.date(2009, 1, 1),
+                before= datetime.date(2009, 1, 1)
+            }
             emailObject: PyGmail Object
 
         Returns:
             JSON output
-
         """
+        json_data = {   "unread": "null", 
+                "sender": "null", 
+                "to": "null", 
+                "on": "null", 
+                "after": "null",
+                "before": "null"
+            }
         mail = Account()
         argumentBuild = []
+        print "HERE"
         json_data = request.get_json(force=True)
-        if json_data['unread']:
-            argumentBuild.append('unread='+str(json_data['unread']))
-        if json_data['sender']:
-            argumentBuild.append('sender='+'"'+str(json_data['sender'])+'"')
-        if json_data['to']:
-            argumentBuild.append('to='+str(json_data['to']))
-        if json_data['on']:
-            argumentBuild.append('on='+str(json_data['on']))
-        elif (json_data['after']) and (json_data['before']):
-            argumentBuild.append('after='+str(json_data['after'])+', '+'before='+str(json_data['before']))
+        print json_data
+        try:
+            if json_data['unread']:
+                print "Inside UnRead"
+                argumentBuild.append('unread = '+str(json_data['unread']))
+        except:
+            pass
+        try:
+            if json_data['sender']:
+                argumentBuild.append('sender='+'"'+str(json_data['sender'])+'"')
+        except: 
+            pass
+        try:
+            if json_data['to']:
+                argumentBuild.append('to='+str(json_data['to']))
+        except:
+            pass
+        try:
+            if json_data['on']:
+                argumentBuild.append('on='+str(json_data['on']))
+            elif (json_data['after']) and (json_data['before']):
+                argumentBuild.append('after='+str(json_data['after'])+', '+'before='+str(json_data['before']))
+        except:
+            pass
+        #mail.inbox().mail(**json_data)
         argumentBuild = ",".join(argumentBuild)
-        print argumentBuild
-        getEmail(mail,argumentBuild)
-        return json_data
+        return getEmail(mail, json_data)
 
+#curl -H "Content-Type: application/json" -X POST -d '{"unread" :"False", "sender": "rohit@c1exchange.com"}' localhost:5000/email   
 
 
 api.add_resource(login, '/login')
