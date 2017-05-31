@@ -59,7 +59,8 @@ function onLaunch(launchRequest, session, callback) {
 
 /**
  * Called when the user specifies an intent for this skill.
- */
+ **/
+
 function onIntent(intentRequest, session, callback) {
 
     var intent = intentRequest.intent;
@@ -94,6 +95,9 @@ function onIntent(intentRequest, session, callback) {
     }
     else if ("ReadMedicineIntent" == intentName) {
         handleReadMedicineDosage(intent, session, callback);
+    }
+    else if ("ReadEmailIntent" == intentName) {
+        //handleReadMedicineDosage(intent, session, callback);
     }
     else if ("AMAZON.YesIntent" === intentName) {
         handleRepeatRequest(intent, session, callback);
@@ -155,6 +159,56 @@ function setNewUserRequest( session, callback)
     console.log("existing setNewUserRequest");
 }
 
+// ----------------------------------------
+// ----------------------------------------
+// ----------------------------------------
+// ----------------------------------------
+
+// function getGmailURL() {
+//     return "http://localhost:5000/gmailCheck"
+// }
+
+// function getEmail(responseBody) {
+//     var result = JSON.parse(responseBody);
+//     console.log(result)
+//     var emailList = unescape(result['emails'].content);
+//     return striptags(emailList);
+// }
+
+
+// function gmailJSON(callback) {
+//     request.get(getGmailtURL(), function(error, response, body) {
+//         if (body.length > 0) {
+//             var emailList = getEmail(body);
+//             callback(emailList);
+//         } else {
+//             callback("No Emails");
+//          }
+//      });
+// }
+
+// function handleGmailRequest(intent, session, callback) {
+//     console.log("inside handleEmail");
+//     gmailJSON(function(data) {
+//         var speechOutput = "There is an error";
+//         if (data != "ERROR") {
+//             console.log('reached with an output');
+//             console.log(data);
+//             speechOutput = data;
+//         } else {
+//             console.log("Oops.. something went wrong");
+//         }
+//         callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
+        
+//     });
+// }
+
+// ----------------------------------------
+// ----------------------------------------
+// ----------------------------------------
+// ----------------------------------------
+
+
 /*
  * source code referred from https://tinyurl.com/hktzmrz and https://tinyurl.com/hg8ykru
  */
@@ -189,7 +243,7 @@ function handleMotivationRequest(intent, session, callback) {
      // Get a random space fact from the space facts list
      var mIndex = Math.floor(Math.random() * mQuotes.length); //Gets random Index
      var randomFact = mQuotes[mIndex]; //Take Fact from List FACTS
- 
+
      // Create speech output
      var speechOutput = "Here's a quote: " + randomFact;
      var reprompt = "Got that?"
@@ -207,7 +261,7 @@ function handleMotivationRequest(intent, session, callback) {
      callback(sessionAttributes,
          buildSpeechletResponse(cardTitle, speechOutput, reprompt, shouldEndSession));
  }
- 
+
 
 function handleAppointmentRequest(intent, session, callback) {
      if(intent.slots.Appointment.value !== undefined && intent.slots.Time.value !== undefined && 
@@ -225,7 +279,7 @@ function handleAppointmentRequest(intent, session, callback) {
                 'time'     : time,
             }; 
             console.log(data);
-            
+         
             //speechOutput = "Great! We've got your appointement recorded in the calendar";
             insertRecord(data,"Appointment",function(result) {
             var speechOutput = "There is an error";
