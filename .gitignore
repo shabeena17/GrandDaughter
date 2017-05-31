@@ -35,3 +35,12 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# PEM files #
+#############
+*.pem
+
+
+# iPyNB files #
+###############
+.ipynb_checkpoints/
