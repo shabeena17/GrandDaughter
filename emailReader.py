@@ -14,6 +14,10 @@ from bs4 import BeautifulSoup
 import warnings
 warnings.filterwarnings('ignore')
 
+#curl -H "Content-Type: application/json" -X POST -d '{"unread" :"True"}' localhost:5000/email 
+#curl -H "Content-Type: application/json" -X POST -d '{"sender": "mrnaik@scu.edu"}' localhost:5000/email 
+
+
 """
 Flask Setup
 """
@@ -23,7 +27,7 @@ api = Api(app)
 
 """Logger Setup
 
-Logs events into AudienceForecast.log at Debug level in the following format: 'Time  LevelName(Debug,Info,etc.) LogMessage'
+Logs events into GrandDaughter.log at Debug level in the following format: 'Time  LevelName(Debug,Info,etc.) LogMessage'
 Logger Level is set to DEBUG to display all debug messages too currently
 
 """
@@ -145,33 +149,12 @@ def readEmail(emailsObj):
 ## FILTERS
 # ----------
 
-#Read Unread Emails
-# def readUnreadEmails(obj):
-#     return readEmail(obj.all_mail().mail(unread=True))
-
-# #Read Emails From Email
-# def emailFrom(obj,fromEmail):
-#     return readEmail(obj.all_mail().mail(sender=fromEmail))
-
-# #Read Emails Sent To
-# def emailTo(obj,toEmail):
-#     return readEmail(obj.all_mail().mail(to=toEmail)) 
-
-# #Read Emails From a Date
-# def emailOn(obj, onDate): #datetime.date(2009, 1, 1)
-#     return readEmail(obj.all_mail().mail(on=onDate))
-
-# #Read Emails Between Dates
-# def emailBetween(obj, fromDate, tillDate): #datetime.date(2013, 6, 18)
-#     return readEmail(obj.all_mail().mail(after=fromDate, before=tillDate))
-
 def getEmail(obj, builder):
     print "Inside getEmail"
     print builder
     r = obj.all_mail().mail(**builder)
     # print namestr(r, globals())
     return readEmail(r)
-
 
 
 class emailReader(Resource):
@@ -234,7 +217,7 @@ class emailReader(Resource):
         argumentBuild = ",".join(argumentBuild)
         return getEmail(mail, json_data)
 
-#curl -H "Content-Type: application/json" -X POST -d '{"unread" :"False", "sender": "rohit@c1exchange.com"}' localhost:5000/email   
+  
 
 
 api.add_resource(login, '/login')
