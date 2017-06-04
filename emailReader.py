@@ -15,8 +15,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 #curl -H "Content-Type: application/json" -X POST -d '{"unread" :"True"}' localhost:5000/email 
-#curl -H "Content-Type: application/json" -X POST -d '{"sender": "mrnaik@scu.edu"}' localhost:5000/email 
-
+#curl -H "Content-Type: application/json" -X POST -d '{"sender": "mrnaik@scu.edu"}' http://54.147.79.105:5000/email
 
 """
 Flask Setup
@@ -83,12 +82,11 @@ def Account():
         if emailObj.logged_in:
             print "Successfully Signed In"
             return emailObj
-            #return emailObj
         else:
-            return jsonify("{Status: ['FAILED':'Authentication Failed']}")
+            print jsonify("{Status: ['FAILED':'Authentication Failed']}")
             return emailObj
     except Exception as e:
-        return jsonify("{Status: ['FAILED':'Authentication Failed: Exception Occured']}")
+        print jsonify("{Status: ['FAILED':'Authentication Failed: Exception Occured']}")
 
 
 
