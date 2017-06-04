@@ -76,6 +76,7 @@ def credentialsFetch():
 
 
 def Account():
+    print "Logging In"
     username, password = credentialsFetch()
     try:
         emailObj = gmail.login(username, password)
@@ -87,6 +88,7 @@ def Account():
             return emailObj
     except Exception as e:
         print jsonify("{Status: ['FAILED':'Authentication Failed: Exception Occured']}")
+    return emailObj 
 
 
 
