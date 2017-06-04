@@ -1,0 +1,144 @@
+{
+  "intents": [
+    {
+      "intent": "AskGrandaughter"
+    },
+    {
+      "intent": "ReadAppIntent"
+    },
+    {
+      "intent": "ReadMedicineIntent"
+    },
+    {
+      "intent": "GetMotivationIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "Appointment",
+          "type": "LIST_OF_APPOINTMENTS"
+        },
+        {
+          "name": "Date",
+          "type": "AMAZON.DATE"
+        },
+        {
+          "name": "Time",
+          "type": "AMAZON.TIME"
+        }
+      ],
+      "intent": "AppointmentIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "Medicine",
+          "type": "LIST_OF_MEDICINE"
+        },
+        {
+          "name": "Dosage",
+          "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "Frequency",
+          "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "TimeOfDay",
+          "type": "LIST_OF_TIME"
+        },
+        {
+          "name": "Instruction",
+          "type": "LIST_OF_INSTRUCTION"
+        },
+        {
+          "name": "ExpiryDate",
+          "type": "AMAZON.DATE"
+        }
+      ],
+      "intent": "MedicineIntent"
+    },
+    {
+      "intent": "WaterRecommendIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "Water_Count",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "WaterConsumptionIntent"
+    },
+    {
+      "intent": "WaterLeftIntent"
+    },
+    {
+      "intent": "EmailUnreadIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "ToName",
+          "type": "AMAZON.US_FIRST_NAME"
+        }
+      ],
+      "intent": "EmailToIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "FromName",
+          "type": "AMAZON.US_FIRST_NAME"
+        }
+      ],
+      "intent": "EmailFromIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "OnDate",
+          "type": "AMAZON.DATE"
+        }
+      ],
+      "intent": "EmailOnIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "StartDate",
+          "type": "AMAZON.DATE"
+        },
+        {
+          "name": "EndDate",
+          "type": "AMAZON.DATE"
+        }
+      ],
+      "intent": "EmailDateRangeIntent"
+    },
+    {
+      "intent": "DontKnowIntent"
+    },
+    {
+      "intent": "AMAZON.StartOverIntent"
+    },
+    {
+      "intent": "AMAZON.RepeatIntent"
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "AMAZON.YesIntent"
+    },
+    {
+      "intent": "AMAZON.NoIntent"
+    },
+    {
+      "intent": "AMAZON.StopIntent"
+    },
+    {
+      "intent": "AMAZON.CancelIntent"
+    }
+  ]
+}
