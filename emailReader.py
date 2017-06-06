@@ -161,6 +161,11 @@ class emailReader(Resource):
     """Class EmailReader endpoint for Post Requests
 
     """
+    def get(self):
+        user = request.args.get('user')
+        return jsonify('{"message": "hello"}')
+
+
     def post(self):
         """Handles the Post Request functionality
 
