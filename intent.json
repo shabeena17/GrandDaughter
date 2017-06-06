@@ -4,6 +4,12 @@
       "intent": "AskGrandaughter"
     },
     {
+      "slots": [
+        {
+          "name": "ApptDate",
+          "type": "AMAZON.DATE"
+        }
+      ],
       "intent": "ReadAppIntent"
     },
     {
