@@ -163,6 +163,7 @@ class emailReader(Resource):
     """
     def get(self):
         user = request.args.get('user')
+        print "get get get"
         return jsonify('{"message": "hello"}')
 
 
