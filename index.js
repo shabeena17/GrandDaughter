@@ -16,6 +16,7 @@ const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
 
 // Route the incoming request based on type (LaunchRequest, IntentRequest,
 // etc.) The JSON body of the request is provided in the event parameter.
+
 exports.handler = function (event, context) {
     try {
         console.log("event.session .application.applicationId=" + event.session.application.applicationId);
@@ -187,163 +188,58 @@ function getEmailURL(){
     return "http://ec2-54-147-79-105.compute-1.amazonaws.com/email";
 }
 
-//---
+//--- POST Requests For Email
+function gmailJSON(pdata, callback) {
+    var postdata = JSON.parse(pdata);
+    console.log("postdata"+postdata);
 
-
-function getGmail(emailurl,data){
-
-    console.log("Inside getGmail"+ emailurl);
-    console.log("inside getGmail data:"+data);
-    var postData = data;
-
-// request option
     var options = {
-        host: 'http://ec2-54-147-79-105.compute-1.amazonaws.com/',
+        uri: getEmailURL(),
         method: 'POST',
-        path: '/email',
-        headers: {
+            headers: {
             'Content-Type': 'application/json',
-            'Content-Length': postData.length
-        }
+            'Content-Length': postdata.length
+        },
+        json: postdata
     };
-    console.log("Options:"+JSON.stringify(options));
-    console.log("postData"+postData);
-// request object
-    var req = http.request(options, function (res) {
-        var result = '';
-        console.log("Inside requests")
-        res.on('data', function (chunk) {
-            console.log("REQUEST ON!!!!");
-            result += chunk;
-        });
-        res.on('end', function () {
-            console.log(result);
-        });
-        res.on('error', function (err) {
-            console.log(err);
-        })
+    request(options, function (error, response, body) {
+        console.log('Length:'+ body['emails'].length)
+      if(body['emails'].length > 0) {
+        var quote = JSON.stringify(body);
+        console.log("Inside Body:"+JSON.stringify(body));
+        callback(quote);
+    } else {
+          console.log("Outside Body:"+JSON.stringify(body));
+          callback("ERROR");
+    }
     });
-
-// req error
-    req.on('error', function (err) {
-        console.log(err);
-    });
-
-//send request witht the postData form
-    req.write(postData);
-    req.end();
-
-
-
-
-
-
-
-
-
-
-    //
-    // var options = {
-    //     uri: emailurl,
-    //     method: 'POST',
-    //     json: data
-    // };
-    // request(options, function (error, response, body) {
-    //     if (!error && response.statusCode == 200) {
-    //         console.log(body.id) // Print the shortened url.
-    //     }
-    // });
-
-
-
-
-
-
-
-
-        // body: JSON.stringify(data),
-        // multipart:[{
-        //     'Content-Type': 'application/json',
-        //     body: data
-        // }]
-        // headers: {
-        //     'Content-Type': 'application/json',
-        //     'Content-Length': post_data.length
-        // }
-
-
-    //
-    // request(options,function (err, res, body) {
-    //     if (err) {
-    //         console.error('error posting json: ', err);
-    //         throw err
-    //     }
-    //     var headers = res.headers;
-    //     var statusCode = res.statusCode;
-    //     console.log('headers: ', headers);
-    //     console.log('statusCode: ', statusCode);
-    //     console.log('body: ', body)
-    // });
-
-    // -------------
-
-    // var output = request.post(
-    //         emailurl, {body: JSON.parse(data), json:true}
-    //     ,  function (error, response, body) {
-    //             console.log("callback");
-    //             callback(body);
-    //             console.log("function:"+ response.responseText);
-    //             ff = body;
-    //             e = error;
-    //             r = response;
-    //             console.log("body:"+JSON.parse(body));
-    //             if (!error && response.statusCode == 200) {
-    //                 console.log(JSON.stringify(body));
-    //             }
-    //             if(error){
-    //                 console.log("ERROR");
-    //                 console.log("error:"+ error);
-    //                 console.log("response:"+ response);
-    //             }
-    //     }
-    // );
-    // console.log("DataSent:"+output.body);
-    //-----------------
-    // console.log("Req:"+ req);
-    // console.log("output:"+ JSON.stringify(output));
-
 }
+
 
 function handleUnreadEmail(intent, session, callback) {
-    var reprompt = "";
     var speechOutput = "";
 
-    var data = {
-        "unread"  : "True"
-    };
-    console.log("Data:" + JSON.stringify(data, null, 2));
+    var vdata = '{"unread" : "True"}';
+    // console.log("Data:" + JSON.stringify(data, null, 2));
 
     // Build the post string from an object
-    var post_data = JSON.stringify(data);
-    console.log("Post_data:" + data);
+    var post_data = JSON.stringify(vdata);
+    console.log("Post_data:" + vdata);
 
-    // An object of options to indicate where to post to
-    // var post_options = {
-    //     host: 'ec2-54-147-79-105.compute-1.amazonaws.com',
-    //     port: '5000',
-    //     path: '/email',
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'Content-Length': post_data.length
-    //     }
-    // };
-    //console.log("post-options: "+ JSON.stringify(post_options, null, 2));
+    gmailJSON(vdata, function (data) {
+        var speechOutput = "There is an error";
+        if (data != "ERROR") {
+            console.log('reached with an output');
+            console.log("gmailJSON"+data);
+            speechOutput = JSON.parse(data);
+        } else {
+            console.log("Oops.. something went wrong");
+        }
+        callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
 
-    getGmail(getEmailURL(), post_data);
-    //
-    callback(session.attributes, buildSpeechletResponse("some_Header", speechOutput, "some_Reprompt", false));
+    });
 }
+
 
 // ----------------------------------------
 // ----------------------------------------
@@ -452,7 +348,7 @@ function handleAppointmentRequest(intent, session, callback) {
 
 
 function handleReadAppointment(intent, session, callback) {
-    
+
     var date = intent.slots.ApptDate.value;
 
     var params = {
@@ -756,7 +652,7 @@ function handleReadMedicineDosage(intent, session, callback) {
 
     var currentdate = usDate.getFullYear()+'-'+month+'-'+usDate.getDate();
     console.log(currentdate);
-    
+
     var params = {
         TableName: "MedicineDosage",
         ProjectionExpression: "ExpiryDate, Medicine, Dosage, Instruction, Frequency, TimeOfDay",
