@@ -11,6 +11,8 @@ import ast
 import json
 from flask import jsonify
 from bs4 import BeautifulSoup
+import datetime
+from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -149,6 +151,14 @@ def readEmail(emailsObj):
 ## FILTERS
 # ----------
 
+def getdate(d):
+    print "Inside getDate"
+    datestr = 'datetime.date('+str(datetime.strptime(d, '%Y-%m-%d').strftime('%Y')) \
+                        +','+str(datetime.strptime(d, '%Y-%m-%d').strftime('%m'))\
+                        +','+str(datetime.strptime(d, '%Y-%m-%d').strftime('%d'))+')'
+    print datestr
+    return datestr
+
 def getEmail(obj, builder):
     print "Inside getEmail"
     print builder
@@ -164,7 +174,7 @@ class emailReader(Resource):
     def get(self):
         user = request.args.get('user')
         print "get get get"
-        return jsonify('{"message": "hello"}')
+        return jsonify('{"Testing": "hello"}')
 
 
     def post(self):
@@ -202,25 +212,34 @@ class emailReader(Resource):
                 argumentBuild.append('unread = '+str(json_data['unread']))
         except:
             pass
+            print "unread OUT"
         try:
             if json_data['sender']:
                 argumentBuild.append('sender='+'"'+str(json_data['sender'])+'"')
         except: 
             pass
+            print "sender OUT"
         try:
             if json_data['to']:
                 argumentBuild.append('to='+str(json_data['to']))
         except:
             pass
+            print "to OUT"
         try:
             if json_data['on']:
-                argumentBuild.append('on='+str(json_data['on']))
+                json_data["on"] = eval(json_data["on"])
+                argumentBuild.append('on='+json_data["on"])
+
             elif (json_data['after']) and (json_data['before']):
-                argumentBuild.append('after='+str(json_data['after'])+', '+'before='+str(json_data['before']))
+                afterDate = getDate(str(json_data['after']))
+                beforeDate = getDate(str(json_data['before']))
+                argumentBuild.append('after='+str(afterDate)+', '+'before='+str(beforeDate))
         except:
             pass
+            print "dates OUT"
         #mail.inbox().mail(**json_data)
-        argumentBuild = ",".join(argumentBuild)
+        passmessage = ",".join(argumentBuild)
+        print str(passmessage)
         return getEmail(mail, json_data)
 
   
@@ -231,4 +250,4 @@ api.add_resource(emailReader, '/email')
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
