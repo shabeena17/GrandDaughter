@@ -227,7 +227,7 @@ class emailReader(Resource):
             print "to OUT"
         try:
             if json_data['on']:
-                json_data["on"] = eval(json_data["on"])
+                json_data["on"] = datetime.strptime(json_data["on"], '%Y-%m-%d')
                 argumentBuild.append('on='+json_data["on"])
 
             elif (json_data['after']) and (json_data['before']):
@@ -250,4 +250,4 @@ api.add_resource(emailReader, '/email')
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
