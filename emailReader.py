@@ -209,33 +209,26 @@ class emailReader(Resource):
         try:
             if json_data['unread']:
                 print "Inside UnRead"
-                argumentBuild.append('unread = '+str(json_data['unread']))
         except:
             pass
             print "unread OUT"
         try:
             if json_data['sender']:
-                argumentBuild.append('sender='+'"'+str(json_data['sender'])+'"')
         except: 
             pass
             print "sender OUT"
         try:
             if json_data['to']:
-                argumentBuild.append('to='+str(json_data['to']))
         except:
             pass
             print "to OUT"
         try:
             if json_data['on']:
                 json_data["on"] = datetime.strptime(json_data["on"], '%Y-%m-%d')
-                argumentBuild.append('on='+json_data["on"])
 
             if (json_data['after']) or (json_data['before']):
                 json_data['after'] = datetime.strptime(json_data["after"], '%Y-%m-%d')
                 json_data['before'] = datetime.strptime(json_data["before"], '%Y-%m-%d')
-                afterDate = getDate(str(json_data['after']))
-                beforeDate = getDate(str(json_data['before']))
-                argumentBuild.append('after='+str(afterDate)+', '+'before='+str(beforeDate))
         except:
             pass
             print "dates OUT"
