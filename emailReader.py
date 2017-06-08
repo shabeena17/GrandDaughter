@@ -230,7 +230,7 @@ class emailReader(Resource):
                 json_data["on"] = datetime.strptime(json_data["on"], '%Y-%m-%d')
                 argumentBuild.append('on='+json_data["on"])
 
-            elif (json_data['after']) and (json_data['before']):
+            if (json_data['after']) or (json_data['before']):
                 json_data['after'] = datetime.strptime(json_data["after"], '%Y-%m-%d')
                 json_data['before'] = datetime.strptime(json_data["before"], '%Y-%m-%d')
                 afterDate = getDate(str(json_data['after']))
@@ -252,4 +252,4 @@ api.add_resource(emailReader, '/email')
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
