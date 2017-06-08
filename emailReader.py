@@ -231,6 +231,8 @@ class emailReader(Resource):
                 argumentBuild.append('on='+json_data["on"])
 
             elif (json_data['after']) and (json_data['before']):
+                json_data['after'] = datetime.strptime(json_data["after"], '%Y-%m-%d')
+                json_data['before'] = datetime.strptime(json_data["before"], '%Y-%m-%d')
                 afterDate = getDate(str(json_data['after']))
                 beforeDate = getDate(str(json_data['before']))
                 argumentBuild.append('after='+str(afterDate)+', '+'before='+str(beforeDate))
