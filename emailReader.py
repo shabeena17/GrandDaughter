@@ -73,7 +73,7 @@ def credentialsFetch():
     Fetches Username and Password From DB/temp
     """
     username = "gd4alexa@gmail.com"
-    password = "alexa12345"
+    password = "alexa1234"
     return [username, password]
 
 
@@ -90,7 +90,7 @@ def Account():
             return emailObj
     except Exception as e:
         print jsonify("{Status: ['FAILED':'Authentication Failed: Exception Occured']}")
-    return emailObj 
+        return emailObj 
 
 
 
@@ -133,7 +133,8 @@ def readEmail(emailsObj):
         print "No new Emails"
     else:
         for email in emailsObj:
-            email.fetch() # can also unread(), delete(), spam(), or star()
+            email.fetch() 
+            # can also unread(), delete(), spam(), or star() || 
             unclean = email.body
             soup = BeautifulSoup(str(unclean))
             [s.extract() for s in soup(['style', 'script', '[document]', 'head', 'title'])]
@@ -143,6 +144,7 @@ def readEmail(emailsObj):
                             email.sent_at.strftime('%d %B %Y'), 
                             email.subject, 
                             visible_text.encode('ascii', 'ignore')])
+            email.read()
         # print emailList
     return makeJson(emailList)
 
@@ -198,6 +200,7 @@ class emailReader(Resource):
         Returns:
             JSON output
         """
+
         json_data = {   "unread": "null", 
                 "sender": "null", 
                 "to": "null", 
@@ -205,6 +208,7 @@ class emailReader(Resource):
                 "after": "null",
                 "before": "null"
             }
+
         mail = Account()
         argumentBuild = []
         print "HERE"
