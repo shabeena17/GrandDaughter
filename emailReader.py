@@ -18,7 +18,7 @@ warnings.filterwarnings('ignore')
 
 #curl -H "Content-Type: application/json" -X POST -d '{"unread" :"True"}' localhost:5000/email 
 #curl -H "Content-Type: application/json" -X POST -d '{"sender": "mrnaik@scu.edu"}' http://54.147.79.105:5000/email
-
+# curl -H "Content-Type: application/json" -X POST -d '{"after" :"2017-06-01", "before" :"2017-06-07"}' localhost:5000/email
 """
 Flask Setup
 """
@@ -224,19 +224,25 @@ class emailReader(Resource):
             print "sender OUT"
         try:
             if json_data['to']:
+                print "Inside to"
         except:
             pass
             print "to OUT"
         try:
             if json_data['on']:
+                print "Inside ON"
                 json_data["on"] = datetime.strptime(json_data["on"], '%Y-%m-%d')
-
+        except:
+            pass
+            print "On Date OUT"
+        try:
             if (json_data['after']) or (json_data['before']):
+                print "Inside After/Before"
                 json_data['after'] = datetime.strptime(json_data["after"], '%Y-%m-%d')
                 json_data['before'] = datetime.strptime(json_data["before"], '%Y-%m-%d')
         except:
             pass
-            print "dates OUT"
+            print "After/Before OUT"
         #mail.inbox().mail(**json_data)
         passmessage = ",".join(argumentBuild)
         print str(passmessage)
@@ -250,4 +256,4 @@ api.add_resource(emailReader, '/email')
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
