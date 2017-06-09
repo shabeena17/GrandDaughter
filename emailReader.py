@@ -160,7 +160,8 @@ def getdate(d):
     return datestr
 
 def getUserEmail():
-    
+    print "Getting User"
+
 
 def getEmail(obj, builder):
     print "Inside getEmail"
