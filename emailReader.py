@@ -159,6 +159,9 @@ def getdate(d):
     print datestr
     return datestr
 
+def getUserEmail():
+    
+
 def getEmail(obj, builder):
     print "Inside getEmail"
     print builder
@@ -214,6 +217,7 @@ class emailReader(Resource):
             print "unread OUT"
         try:
             if json_data['sender']:
+                print "Inside sender"
         except: 
             pass
             print "sender OUT"
