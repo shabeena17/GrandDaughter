@@ -73,7 +73,7 @@ def credentialsFetch():
     Fetches Username and Password From DB/temp
     """
     username = "gd4alexa@gmail.com"
-    password = "alexa1234"
+    password = "alexa12345"
     return [username, password]
 
 
