@@ -10,6 +10,7 @@ import datetime
 import ast
 import json
 from flask import jsonify
+import boto.dynamodb
 from bs4 import BeautifulSoup
 import datetime
 from datetime import datetime
@@ -72,9 +73,13 @@ def credentialsFetch():
     """
     Fetches Username and Password From DB/temp
     """
-    username = "gd4alexa@gmail.com"
-    password = "alexa1234"
-    return [username, password]
+    conn = boto.dynamodb.connect_to_region(
+        'us-east-1',
+        aws_access_key_id='AKIAI3MA3MNVDYEGIFZA',
+        aws_secret_access_key='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')
+    c = conn.get_table('SystemInfo')
+    output = c.get_item('gd4alexa')
+    return [output['Email'], output['Password']]
 
 
 def Account():
@@ -260,4 +265,4 @@ api.add_resource(emailReader, '/email')
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
