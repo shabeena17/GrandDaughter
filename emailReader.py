@@ -75,8 +75,8 @@ def credentialsFetch():
     """
     conn = boto.dynamodb.connect_to_region(
         'us-east-1',
-        aws_access_key_id='AKIAI3MA3MNVDYEGIFZA',
-        aws_secret_access_key='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')
+        aws_access_key_id='<Access Key>',
+        aws_secret_access_key='<Secret Access Key>')
     c = conn.get_table('SystemInfo')
     output = c.get_item('gd4alexa')
     return [output['Email'], output['Password']]
