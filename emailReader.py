@@ -248,6 +248,8 @@ class emailReader(Resource):
             if (json_data['after']) or (json_data['before']):
                 print "Inside After/Before"
                 json_data['after'] = datetime.strptime(json_data["after"], '%Y-%m-%d')
+                if json_data['before'] == "undefined":
+                    json_data['before'] = date.today()
                 json_data['before'] = datetime.strptime(json_data["before"], '%Y-%m-%d')
         except:
             pass
