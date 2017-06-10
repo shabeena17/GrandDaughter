@@ -1,5 +1,6 @@
-# GrandDaughter
+![Logo](https://github.com/shabeena17/GrandDaughter/blob/dev/images/logo.png)
 
+## Summary
 * With a rising senior population and low birth rate, we are observing more seniors living alone
 * Many problems come with aging such as forgetfulness and challenges with technologies
 * Through a survey, we gained an insight of difficulties seniors living alone face daily and the possibility for utilizing speech recognition technology
@@ -19,6 +20,11 @@
 * Projection: More Senior Population Living Alone
 Issues with aging: forgetfulness, deteriorating health condition, etc.
 
+----
+## Survey Results
+![IssueEncountered](https://github.com/shabeena17/GrandDaughter/blob/dev/images/Picture1.png)
+![ComfortLevel](https://github.com/shabeena17/GrandDaughter/blob/dev/images/Picture2.png)
+![MonetaryWillingness](https://github.com/shabeena17/GrandDaughter/blob/dev/images/Picture3.png)
 
 ----
 ## Proposed Solution
@@ -44,3 +50,15 @@ Issues with aging: forgetfulness, deteriorating health condition, etc.
 * [DynamoDB] ( https://aws.amazon.com/dynamodb/) 
 * [Flask] (http://flask.pocoo.org/)
 * [Alexa Skills Kit] (https://developer.amazon.com/alexa-skills-kit)
+
+----
+## Contributors
+* [Chia-Lun Chen](https://www.linkedin.com/in/chialunchen/)
+* [Rohit Jacob](https://www.linkedin.com/in/rohitjacob92/)
+* [Shabeena Khoja](https://www.linkedin.com/in/shabeenakhoja/)
+* [Mithilesh Naik](https://www.linkedin.com/in/mithileshnaik/)
+* [Rutuja Patil](https://www.linkedin.com/in/rutujapatil1/)
+
+----
+## Acknowledgements
+We thank the Professor Haibing Lu, the faculty and students of Santa Clara University and San Jose Senior Communities for participating our survey.
