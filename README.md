@@ -61,4 +61,4 @@ Issues with aging: forgetfulness, deteriorating health condition, etc.
 
 ----
 ## Acknowledgements
-We thank the Professor Haibing Lu, the faculty and students of Santa Clara University and San Jose Senior Communities for participating our survey.
+We thank Professor Haibing Lu for all his support. We'd also like to thank the faculty and students of Santa Clara University and San Jose Senior Communities for participating our survey.
