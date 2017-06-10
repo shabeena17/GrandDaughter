@@ -45,10 +45,10 @@ Issues with aging: forgetfulness, deteriorating health condition, etc.
 ## Frameworks & Technologies Used
 
 
-* [Node JS] (https://nodejs.org/en/)
-* [DynamoDB] ( https://aws.amazon.com/dynamodb/) 
-* [Flask] (http://flask.pocoo.org/)
-* [Alexa Skills Kit] (https://developer.amazon.com/alexa-skills-kit)
+* [Node JS](https://nodejs.org/en/)
+* [DynamoDB]( https://aws.amazon.com/dynamodb/) 
+* [Flask](http://flask.pocoo.org/)
+* [Alexa Skills Kit](https://developer.amazon.com/alexa-skills-kit)
 
 ----
 ## Contributors
