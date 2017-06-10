@@ -32,12 +32,12 @@ Issues with aging: forgetfulness, deteriorating health condition, etc.
 * 57.3% surveyors willing to pay from $0 - $100
 * Combine the above two factors, we have reached a conclusion:
 * Senior Help Application on Amazon Alexa Platform
- * Emergency Trigger & Find my phone
- * Motivational Support
- * Appointment Helper
- * Water Intake Helper
- * Medication Assistant
- * Email Manager
+  * Emergency Trigger & Find my phone
+  * Motivational Support
+  * Appointment Helper
+  * Water Intake Helper
+  * Medication Assistant
+  * Email Manager
 
 
 
