@@ -1,0 +1,159 @@
+AskGrandaughter ask granddaughter
+ReadAppIntent read my appointment for today
+ReadAppIntent do I have any appointment today
+ReadAppIntent do I have any appointment
+ReadAppIntent do I have any appointment for today
+ReadAppIntent do I have any appointment for the day
+ReadAppIntent do I have appointment today
+ReadAppIntent do I have appointment
+ReadAppIntent do I have appointment for today
+ReadAppIntent do I have appointment for the day
+ReadAppIntent do I have appointments today
+ReadAppIntent do I have appointments
+ReadAppIntent do I have appointments for today
+ReadAppIntent do I have appointments for the day
+ReadAppIntent do I have an appointment today
+ReadAppIntent do I have an appointment
+ReadAppIntent do I have an appointment for today
+ReadAppIntent do I have an appointment for the day
+ReadAppIntent get my appointment
+ReadAppIntent get my appointment for today
+ReadAppIntent get my appointment for the day
+ReadAppIntent get my appointments
+ReadAppIntent get my appointments for today
+ReadAppIntent get my appointments for the day
+ReadAppIntent get me my appointment
+ReadAppIntent get me my appointment for today
+ReadAppIntent get me my appointment for the day
+ReadAppIntent get me my appointments
+ReadAppIntent get me my appointments for today
+ReadAppIntent get me my appointments for the day
+ReadAppIntent read me my appointment
+ReadAppIntent read me my appointment for today
+ReadAppIntent read me my appointment for the day
+ReadAppIntent read me my appointments
+ReadAppIntent read me my appointments for today
+ReadAppIntent read me my appointments for the day
+ReadAppIntent what are my appointments
+ReadAppIntent what are my appointments today
+ReadAppIntent what are my appointments for the day
+ReadAppIntent what are my appointments for today
+ReadMedicineIntent what medicines do i need to take today
+ReadMedicineIntent what medicines I have to take
+ReadMedicineIntent what medicines I should take
+ReadMedicineIntent tell me the medicines to be taken for the day
+GetMotivationIntent give me a motivation
+GetMotivationIntent motivate me
+GetMotivationIntent tell me a quote
+GetMotivationIntent I feel down
+GetMotivationIntent I feel low
+GetMotivationIntent I am in a bad mood
+GetMotivationIntent I'm in a bad mood
+GetMotivationIntent I need motivation
+AppointmentIntent book a {Appointment} appointment on {Date} at {Time}
+AppointmentIntent store a {Appointment} appointment on {Date} at {Time}
+AppointmentIntent record a {Appointment} appointment on {Date} at {Time}
+MedicineIntent take {Dosage} pills of {Medicine} {Instruction} everyday in the {TimeOfDay} until {ExpiryDate}
+MedicineIntent store {Dosage} pills of {Medicine} {Instruction} everyday in the {TimeOfDay} until {ExpiryDate}
+MedicineIntent record {Dosage} pills of {Medicine} {Instruction} everyday in the {TimeOfDay} until {ExpiryDate}
+MedicineIntent take {Dosage} pills of {Medicine} {Frequency} a day {Instruction} until {ExpiryDate}
+WaterRecommendIntent give me water intake recommendation for the day
+WaterRecommendIntent give me water intake recommendation
+WaterRecommendIntent give me water intake recommendation for today
+WaterRecommendIntent give me water intake recommendation today
+WaterRecommendIntent give me my water intake recommendation for the day
+WaterRecommendIntent give me my water intake recommendation
+WaterRecommendIntent give me my water intake recommendation for today
+WaterRecommendIntent give me my water intake recommendation today
+WaterRecommendIntent get me water intake recommendation for the day
+WaterRecommendIntent get me water intake recommendation
+WaterRecommendIntent get me water intake recommendation for today
+WaterRecommendIntent get me my water intake recommendation for the day
+WaterRecommendIntent get me water intake recommendation today
+WaterRecommendIntent get me my water intake recommendation
+WaterRecommendIntent get me my water intake recommendation for today
+WaterRecommendIntent get me my water intake recommendation today
+WaterRecommendIntent what is my water intake recommendation for the day
+WaterRecommendIntent what is my water intake recommendation
+WaterRecommendIntent what is my water intake recommendation for today
+WaterRecommendIntent what is my water intake recommendation today
+WaterRecommendIntent what's my water intake recommendation for the day
+WaterRecommendIntent what's my water intake recommendation
+WaterRecommendIntent what's my water intake recommendation for today
+WaterRecommendIntent what's my water intake recommendation today
+WaterConsumptionIntent I have drank {Water_Count} glass of water today
+WaterConsumptionIntent I have drank {Water_Count} glass of water for today
+WaterConsumptionIntent I have drank {Water_Count} glass of water for the day
+WaterConsumptionIntent I have drank {Water_Count} glass of water
+WaterConsumptionIntent I drank {Water_Count} glass of water for today
+WaterConsumptionIntent I drank {Water_Count} glass of water for the day
+WaterConsumptionIntent I drank {Water_Count} glass of water today
+WaterConsumptionIntent I drank {Water_Count} glass of water
+WaterConsumptionIntent I drink {Water_Count} glass of water for today
+WaterConsumptionIntent I drink {Water_Count} glass of water for the day
+WaterConsumptionIntent I drink {Water_Count} glass of water today
+WaterConsumptionIntent I drink {Water_Count} glass of water
+WaterConsumptionIntent I've drank {Water_Count} glass of water today
+WaterConsumptionIntent I've drank {Water_Count} glass of water
+WaterConsumptionIntent I've drank {Water_Count} glass of water for the day
+WaterConsumptionIntent I've drank {Water_Count} glass of water
+WaterConsumptionIntent I had {Water_Count} glass of water today
+WaterConsumptionIntent I had {Water_Count} glass of water
+WaterConsumptionIntent I had {Water_Count} glass of water for the day
+WaterConsumptionIntent I had {Water_Count} glass of water
+WaterConsumptionIntent I've had {Water_Count} glass of water today
+WaterConsumptionIntent I've had {Water_Count} glass of water
+WaterConsumptionIntent I've had {Water_Count} glass of water for the day
+WaterConsumptionIntent I've had {Water_Count} glass of water
+WaterConsumptionIntent I have had {Water_Count} glass of water today
+WaterConsumptionIntent I have had {Water_Count} glass of water
+WaterConsumptionIntent I have had {Water_Count} glass of water for the day
+WaterConsumptionIntent I have had {Water_Count} glass of water
+WaterLeftIntent how much water do I need to drink for today
+WaterLeftIntent how much water do I need to drink for the day
+WaterLeftIntent how much water do I have to drink for today
+WaterLeftIntent how much water do I have to drink for the day
+WaterLeftIntent how much water left for today
+WaterLeftIntent how much water left for the day
+WaterLeftIntent how much water do I have left for today
+WaterLeftIntent how much water do I have left for the day
+WaterLeftIntent how much water do I need to drink today
+WaterLeftIntent how much water do I have to drink today
+WaterLeftIntent how much water left today
+WaterLeftIntent how much water do I have left today
+WaterLeftIntent how much do I need to drink for today
+WaterLeftIntent how much do I need to drink for the day
+WaterLeftIntent how much do I have to drink for today
+WaterLeftIntent how much do I have to drink for the day
+WaterLeftIntent how much left for today
+WaterLeftIntent how much left for the day
+WaterLeftIntent how much do I have left for today
+WaterLeftIntent how much do I have left for the day
+WaterLeftIntent how much do I need to drink today
+WaterLeftIntent how much do I have to drink today
+WaterLeftIntent how much left today
+WaterLeftIntent how much do I have left today
+DontKnowIntent i don't know
+DontKnowIntent don't know
+DontKnowIntent skip
+DontKnowIntent i don't know that
+DontKnowIntent who knows
+DontKnowIntent i don't know this question
+DontKnowIntent i don't know that one
+DontKnowIntent dunno
+AMAZON.StartOverIntent start granddaughter
+AMAZON.StartOverIntent ask granddaughter
+AMAZON.StartOverIntent start
+AMAZON.StartOverIntent start new game
+
+EmailUnreadIntent read out all the unread emails
+EmailUnreadIntent read all the unread emails
+EmailUnreadIntent read unread emails
+EmailUnreadIntent Do I have any new emails
+EmailUnreadIntent Do I have any unread emails
+EmailToIntent Read Emails Sent to {ToName}
+EmailFromIntent Read Emails From {FromName}
+EmailOnIntent Read Emails Sent on {OnDate}
+EmailDateRangeIntent read the emails from {StartDate} to {EndDate}
+EmailDateRangeIntent read all the emails between {StartDate} to {EndDate}
+EmailDateRangeIntent read all the emails falling in the range of {StartDate} to {EndDate}

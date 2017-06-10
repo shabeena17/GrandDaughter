@@ -1,0 +1,17 @@
+BeautifulSoup==3.2.1
+beautifulsoup4==4.6.0
+CherryPy==10.2.1
+cycler==0.10.0
+emails==0.5.13
+Flask==0.12.1
+Flask-Ask==0.9.3
+flask-emails==0.4
+Flask-RESTful==0.3.5
+jsonschema==2.6.0
+logging==0.4.9.6
+premailer==3.0.1
+pygmail==0.0.5.4
+python-dateutil==2.5.1
+simplejson==3.10.0
+Werkzeug==0.11.15
+
