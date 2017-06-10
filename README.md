@@ -23,8 +23,7 @@ Issues with aging: forgetfulness, deteriorating health condition, etc.
 ----
 ## Survey Results
 ![IssueEncountered](https://github.com/shabeena17/GrandDaughter/blob/dev/images/Picture1.png)
-![ComfortLevel](https://github.com/shabeena17/GrandDaughter/blob/dev/images/Picture2.png)
-![MonetaryWillingness](https://github.com/shabeena17/GrandDaughter/blob/dev/images/Picture3.png)
+![ComfortLevels](https://github.com/shabeena17/GrandDaughter/blob/dev/images/Picture2.png)
 
 ----
 ## Proposed Solution
